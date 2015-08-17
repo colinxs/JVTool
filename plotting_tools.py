@@ -11,6 +11,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 
+
 def plot(new_file, x_data, y_data, bounds, x_label='', y_label=''):
     """
     Saves a plot as 'new_file.name' on given bounds or auto-ranged
@@ -54,9 +55,10 @@ def plot(new_file, x_data, y_data, bounds, x_label='', y_label=''):
     ax.spines['top'].set_color('none')
     ax.xaxis.tick_bottom()
     fig.savefig(new_file, format='png')
-    print '%s saved successfully!' % (new_file.name)
+    print '%s saved successfully!' % new_file.name
     plt.close(fig)
-        
+
+
 def get_bounds():
     """Gets desired plotting bounds from user, returns None if no bounds 
     
@@ -73,6 +75,6 @@ def get_bounds():
         max_x = int(raw_input('max X > '))
         min_y = int(raw_input('min Y > '))
         max_y = int(raw_input('max Y > '))
-        return (min_x, max_x, min_y, max_y)
+        return min_x, max_x, min_y, max_y
     else:
         return None
