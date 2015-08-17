@@ -8,10 +8,11 @@ __status__ = 'Development'
 
 import os
 import ss_device
-from collections import OrderedDict
 import matplotlib
 matplotlib.use('Agg')
 import numpy as np
+import jv_calculations
+
 
 def get_dir_path():
     """
@@ -30,6 +31,7 @@ def get_dir_path():
     else:
         print 'Path doesn\'t exist or points to a file, not a directory'
         return get_dir_path()
+
 
 class HandleFileSave(object):
     """
@@ -85,6 +87,7 @@ class HandleFileSave(object):
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.file_handler.close()
+
     # pylint: disable=C0103
     def _modify_filename(self, n):
         root, suffix = os.path.splitext(self.path)
@@ -115,7 +118,7 @@ def get_pixel_file_paths(directory):
     for a_file in os.listdir(directory):
         # if file in directory is a text file that is not the char file
         if (os.path.isfile(os.path.join(directory, a_file)) and
-                a_file.endswith('.txt') and not 'char' in a_file):
+                a_file.endswith('.txt') and 'char' not in a_file):
             path = os.path.join(directory, a_file)
             with open(path) as pixel_file:
                 # if file contains header indicating proper JV file
@@ -125,6 +128,7 @@ def get_pixel_file_paths(directory):
                 except StopIteration:
                     pass
     return pixel_files_paths
+
 
 def extract_data(pixel_files_paths, minimum_voc):
     """
@@ -149,6 +153,7 @@ def extract_data(pixel_files_paths, minimum_voc):
         with open(file_path) as pixel_file:
             directory, filename = os.path.split(pixel_file.name)
             name = filename.split('.')[0]
+            # noinspection PyTypeChecker
             bias, current_density, current = np.loadtxt(
                 pixel_file,
                 dtype='f8,f8,f8',
@@ -156,21 +161,24 @@ def extract_data(pixel_files_paths, minimum_voc):
                 usecols=(0, 1, 2),
                 delimiter='\t',
                 unpack=True)
-            V_to_J = dict(zip(bias, current_density))
-            V_to_I = dict(zip(bias, current))
+
+            # create JVCurve object from data
+            jv_curve = jv_calculations.JVCurve(
+                bias,
+                current,
+                current_density,
+                minimum_voc
+            )
 
             # create Pixel object from data
             a_pixel = ss_device.Pixel(
                 name,
                 directory,
-                bias,
-                current,
-                current_density,
-                V_to_J,
-                V_to_I,
-                minimum_voc)
+                jv_curve,
+            )
             pixel_list.append(a_pixel)
     return pixel_list
+
 
 def prompt_overwrite(file_type):
     """

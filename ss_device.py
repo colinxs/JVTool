@@ -12,7 +12,7 @@ import matplotlib
 matplotlib.use('Agg')
 from collections import OrderedDict
 import numpy as np
-from scipy.interpolate import UnivariateSpline
+
 
 class Pixel(object):
     """
@@ -24,7 +24,7 @@ class Pixel(object):
         directory : str
             the directory containing`this pixel's JV data
         name : str
-            the fillname of this pixel's JV data
+            the filename of this pixel's JV data
         V_to_J : OrderedDict
             a dict of Bias-->Current Density whose values are represented
             as strings
@@ -54,204 +54,19 @@ class Pixel(object):
         power_curve : float
             this pixels power density curve defined as J*V
     """
-    def __init__(self, 
-                 name, 
-                 directory, 
-                 bias_data, 
-                 current_data, 
-                 current_density_data,
-                 V_to_J,
-                 V_to_I,
-                 minimum_voc
+    def __init__(
+        self,
+        name,
+        directory,
+        jv_curve
     ):
         """ Initializes an instance of Pixel object"""
         self.directory = directory
         self.name = name
-        self.current_density = current_density_data.tolist()
-        self.current = current_data.tolist()
-        self.bias = bias_data.tolist()
-        self.min_Voc = minimum_voc
-        self.V_to_J = V_to_J
-        self.V_to_I = V_to_I
-        self.power_curve = self.create_power_curve()
-        self.Voc = self.calc_Voc()
-        self.Jsc = self.calc_Jsc()
-        self.Isc = self.calc_Isc()
-        self.FF = self.calc_FF()
-        self.PCE = self.calc_PCE()
-        self.area = self.calc_area()
-        
-        
+        self.jv_curve = jv_curve
 
-    def calc_area(self):
-        """Return the area of this pixel"""
-        if self.Voc != None:
-            return round(self.Isc / self.Jsc * 1000, 3)
-        else:
-            return None
 
-    def create_power_curve(self):
-        """Return the power curve of this pixel"""
-        power_curve = []
-        for i in range(0, len(self.bias)):
-            power_curve.append(self.bias[i] * self.current_density[i])
-        return power_curve
-
-    def _check_index(self, index):
-        """
-        Checks if index is within the bounds of this pixel's data
-
-        Parameters
-        ----------
-            index : int 
-                the index to be checked for validity
-
-        Return:
-        ----------
-            True if index is within the bounds of this pixels domain of
-            valid indices, False otherwise
-        """
-        return (index > 0) and (index < len(self.bias))
-
-    def calc_Voc(self):
-        """
-        Calculate and return the Voc of this pixel.
-        
-        Returns
-        ----------
-            None if no Voc exists meaning that this pixel is invalid
-        """
-        zero_crossings = statistics.find_zero_crossings(self.current_density)
-        # if a zero crossing in JV curve exists
-        if len(zero_crossings) == 1:
-            # index of nearest value to Voc
-            zero_index = zero_crossings[0]
-
-            # sets lower and upper limits of subrange of data to fit spline
-            number_of_data_points = len(self.bias)
-            sub_range = number_of_data_points / 10
-            lower_limit_range = zero_index - sub_range
-            upper_limit_range = zero_index + sub_range
- 
-           # sets lower_limit_range to 0 if outside of data range
-            if not self._check_index(lower_limit_range):
-                lower_limit_range = 0
-            # sets upper_limit_range to end of data list if outside data range
-            if not self._check_index(upper_limit_range):
-                upper_limit_range = len(self.bias) - 1
-
-            # Takes subrange slice of self.bias and self.current_density
-            # from lower_limit_range to upper_limit_range
-            subregion_of_bias = self.bias[lower_limit_range:upper_limit_range]
-            subregion_of_current_density = (
-                self.current_density[lower_limit_range:upper_limit_range])
-
-            # fit univariate spline with no smoothing to region surronding Voc
-            # and return largest root
-            current_density_spline = UnivariateSpline(
-                subregion_of_bias,
-                subregion_of_current_density,
-                k=3,
-                s=0)
-            current_density_spline_roots = current_density_spline.roots()
-            # Voc at end of list, corresponding to largest Voc found
-            Voc = current_density_spline_roots[-1]
-            if Voc > self.min_Voc:
-                return Voc
-            else:
-                return None
-        else:
-            return None
-
-    def calc_Jsc(self):
-        """
-        Calculate and return Jsc of this pixel.
-        
-        Returns
-        ----------
-            Jsc of pixel, None if no Voc exists meaning that this pixel is invalid.
-        """
-        # Look up current density at 0 applied bias
-        if self.Voc != None:
-            return abs(self.V_to_J[0])
-        else:
-            return None
-
-    def calc_Isc(self):
-        """
-        Calculate and return Isc of this pixel.
-        
-        Returns
-        ----------
-            Isc of pixel, None if no Voc exists meaning that this pixel is invalid.
-        """
-        if self.Voc != None:
-            return abs(self.V_to_I[0])
-        else:
-            return None
-
-    def calc_PCE(self):
-        """
-        Calculate and return PCE of this pixel.
-        
-        Returns
-        ----------
-            PCE of pixel, None if no Voc exists meaning that this pixel is invalid.
-        """
-        if self.Voc != None:
-            return self.Voc * self.Jsc * self.FF
-        else:
-            return None
-
-    def calc_FF(self):
-        """
-        Calculate and return Fill Factor of this pixel.
-        
-        Return
-        ----------
-            Fill Factor of pixel, None if no Voc exists meaning that this pixel is invalid
-        """
-        if self.Voc != None:
-            # zero crossings of power curve, ideally should only be one value
-            zero_crossings_of_power = statistics.find_zero_crossings(
-                self.power_curve)
-
-            # set lower_limit_range to index corresponding to 0 power
-            lower_limit_range = self.bias.index(0)
-
-            # sets upper_limit_range to index of zero crossing if exists,
-            # otherwise set to end of data list
-            upper_limit_range = len(self.bias) - 1
-            if len(zero_crossings_of_power) == 1:
-                upper_limit_range = zero_crossings_of_power[-1]
-
-            # fit univariate spline with no smoothing to subregion of power
-            # curve where maximum power occurs
-            subregion_of_bias = self.bias[lower_limit_range:upper_limit_range]
-            subregion_of_power_curve = self.power_curve[lower_limit_range:
-                                                        upper_limit_range]
-            power_curve_spline = UnivariateSpline(subregion_of_bias,
-                                                  subregion_of_power_curve,
-                                                  k=4,
-                                                  s=0)
-            power_curve_spline_deriv = power_curve_spline.derivative()
-
-            # Find maximum power by finding critical points of power curve fit
-            # and testing each value
-            power_curve_spline_deriv_roots = power_curve_spline_deriv.roots()
-            potential_power = (
-                power_curve_spline(power_curve_spline_deriv_roots))
-            idx_root_of_max_power = np.argmin(np.asarray(potential_power))
-
-            # calcluate fill factor
-            actual_max_pwr = potential_power[idx_root_of_max_power]
-            theoretical_max_pwr = self.Voc * self.Jsc
-            fill_factor = abs(actual_max_pwr / theoretical_max_pwr)
-            return fill_factor
-        else:
-            return None
-
-        
+# noinspection PyPep8Naming
 class Device(object):
     """
     The Device class represents a composition of Pixel objects.
@@ -298,8 +113,8 @@ class Device(object):
         """
         list_of_FF = []
         for pixel in self.pixel_list: 
-            FF = pixel.FF
-            if FF != None:
+            FF = pixel.jv_curve.FF
+            if FF is not None:
                 list_of_FF.append(FF)
         return (
             np.mean(list_of_FF), 
@@ -319,8 +134,8 @@ class Device(object):
         """
         list_of_PCE = []
         for pixel in self.pixel_list:
-            PCE = pixel.PCE
-            if PCE != None:
+            PCE = pixel.jv_curve.PCE
+            if PCE is not None:
                 list_of_PCE.append(PCE)
         return (np.mean(list_of_PCE), 
                 np.std(list_of_PCE), 
@@ -339,8 +154,8 @@ class Device(object):
         """
         list_of_Jsc = []
         for pixel in self.pixel_list:
-            Jsc = pixel.Jsc
-            if Jsc != None:
+            Jsc = pixel.jv_curve.Jsc
+            if Jsc is not None:
                 list_of_Jsc.append(Jsc)
         return (np.mean(list_of_Jsc), 
                 np.std(list_of_Jsc), 
@@ -359,8 +174,8 @@ class Device(object):
         """
         list_of_Voc = []
         for pixel in self.pixel_list:
-            Voc = pixel.Voc
-            if Voc != None:
+            Voc = pixel.jv_curve.Voc
+            if Voc is not None:
                 list_of_Voc.append(Voc)
         return (np.mean(list_of_Voc), 
                 np.std(list_of_Voc), 
@@ -379,8 +194,8 @@ class Device(object):
         """
         list_of_Isc = []
         for pixel in self.pixel_list:
-            Isc = pixel.Isc
-            if Isc != None:
+            Isc = pixel.jv_curve.Isc
+            if Isc is not None:
                 list_of_Isc.append(Isc)
         return (np.mean(list_of_Isc), 
                 np.std(list_of_Isc), 
