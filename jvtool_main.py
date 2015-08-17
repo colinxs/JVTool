@@ -11,6 +11,7 @@ import ss_device
 import os
 import plotting_tools
 
+
 def main():
 
     continue_processing = True
@@ -48,10 +49,11 @@ def main():
 
     print 'Have a great day!'
 
+
 def save_device_parameters(device):
     """Saves this device's parameters in a file named device_name.txt
 
-    Paramaters
+    Parameters
     ----------
     device : Device object
         the current device being saved
@@ -67,6 +69,7 @@ def save_device_parameters(device):
             device,
             new_file,
         )
+
 
 def _save_device_parameters_helper(device, new_file):
     """
@@ -90,16 +93,16 @@ def _save_device_parameters_helper(device, new_file):
         'PCE'))
     # individual pixel parameters
     for pixel in device.pixel_list:
-        if pixel.Voc != None:
-            # individual pixel paramters
+        if pixel.jv_curve.Voc is not None:
+            # individual pixel parameters
             new_file.write('{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(
                 pixel.name,
-                pixel.Voc,
-                pixel.Isc,
-                pixel.area,
-                pixel.Jsc,
-                pixel.FF,
-                pixel.PCE))
+                pixel.jv_curve.Voc,
+                pixel.jv_curve.Isc,
+                pixel.jv_curve.area,
+                pixel.jv_curve.Jsc,
+                pixel.jv_curve.FF,
+                pixel.jv_curve.PCE))
     # device parameter mean
     new_file.write(
         'Averages:\t{}\t{}\t\t{}\t{}\t{}\n'.format(
@@ -134,6 +137,7 @@ def _save_device_parameters_helper(device, new_file):
             device.outliers_PCE))
     print '\'{}\' saved successfully!'.format(new_file.name)
 
+
 def save_plot(device):
     """Saves JV plots for each Pixel in this Device
 
@@ -158,8 +162,8 @@ def save_plot(device):
         with io_handling.HandleFileSave(image_path, overwrite) as new_file:
             plotting_tools.plot(
                 new_file,
-                pixel.bias,
-                pixel.current_density,
+                pixel.jv_curve.bias_data,
+                pixel.jv_curve.current_density_data,
                 bounds
             )
 
