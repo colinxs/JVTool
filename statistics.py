@@ -5,7 +5,8 @@ __email__ = 'colinxs@uw.edu'
 __status__ = 'Development'   
 
 import numpy as np
-
+from scipy.interpolate import UnivariateSpline
+import matplotlib.pyplot as plt
 
 # noinspection PyPep8Naming
 def q_test(data, left=True, right=True, qtest='q99'):
@@ -136,3 +137,65 @@ def find_zero_crossings(a_list):
     pos_to_neg_crossing = pos[:-1] & neg[1:]
     all_zero_crossings = neg_to_pos_crossing | pos_to_neg_crossing
     return np.where(all_zero_crossings == True)[0]
+
+def curve_fit(x_data, y_data, x_point=None, range_percent=0.1, order=3, lower_limit_range=0, upper_limit_range=None, plot=False):
+
+    if x_point and upper_limit_range == None:
+        # sets lower and upper limits of subrange of data to fit spline to +/- range_percent% of data around Voc
+        # number_of_data_points = len(x_data)
+        data_range = int(len(x_data) * range_percent)
+        lower_limit_range = x_point - data_range
+        upper_limit_range = x_point + data_range
+    elif upper_limit_range == None:
+        upper_limit_range = len(x_data) - 1
+
+    # sets lower_limit_range to 0 if outside of data range
+    if not check_index(lower_limit_range, x_data):
+        lower_limit_range = 0
+    # sets upper_limit_range to end of data list if outside data range
+    if not check_index(upper_limit_range, x_data):
+        upper_limit_range = len(x_data) - 1
+
+    # Takes subrange slice of x_data and y_data
+    # from lower_limit_range to upper_limit_range
+    x_subregion = x_data[lower_limit_range:upper_limit_range]
+    y_subregion = y_data[lower_limit_range:upper_limit_range]
+
+    # fit univariate spline with no smoothing to region surronding Voc
+    # and return largest root
+
+    curve = UnivariateSpline(
+        x_subregion,
+        y_subregion,
+        k=order,
+        s=0)
+    if plot:
+        print lower_limit_range, upper_limit_range
+        print len(x_data)
+        print x_data[lower_limit_range]
+        print x_data[upper_limit_range]
+
+        x = np.linspace(x_data[lower_limit_range], x_data[upper_limit_range], len(x_subregion) * 10)
+        y = curve(x)
+        plt.figure()
+        plt.plot(x,y)
+        plt.plot(x_subregion, y_subregion, 'bo')
+        plt.ioff()
+        plt.show()
+    return curve
+
+def check_index(index, a_list):
+    """
+    Checks if index is within the bounds of this pixel's data
+
+    Parameters
+    ----------
+        index : int
+            the index to be checked for validity
+
+    Return:
+    ----------
+        True if index is within the bounds of this pixels domain of
+        valid indices, False otherwise
+    """
+    return (index > 0) and (index < len(a_list))

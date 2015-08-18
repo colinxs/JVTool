@@ -9,7 +9,6 @@ __status__ = 'Development'
 import statistics
 import os
 import matplotlib
-matplotlib.use('Agg')
 from collections import OrderedDict
 import numpy as np
 
@@ -100,6 +99,8 @@ class Device(object):
         self.mean_Jsc, self.std_Jsc, self.outliers_Jsc, self.median_Jsc = self.calc_stat_Jsc()
         self.mean_Voc, self.std_Voc, self.outliers_Voc, self.median_Voc = self.calc_stat_Voc()
         self.mean_PCE, self.std_PCE, self.outliers_PCE, self.median_PCE = self.calc_stat_PCE()
+        self.mean_Rs, self.std_Rs, self.outliers_Rs, self.median_Rs = self.calc_stat_Rs()
+        self.mean_Rsh, self.std_Rsh, self.outliers_Rsh, self.median_Rsh = self.calc_stat_Rsh()
 
     def calc_stat_FF(self):
         """
@@ -116,11 +117,13 @@ class Device(object):
             FF = pixel.jv_curve.FF
             if FF is not None:
                 list_of_FF.append(FF)
-        return (
-            np.mean(list_of_FF), 
-            np.std(list_of_FF), 
-            statistics.q_test(list_of_FF),
-            np.median(list_of_FF))
+        if len(list_of_FF) > 0:
+            return (np.mean(list_of_FF),
+                    np.std(list_of_FF),
+                    statistics.q_test(list_of_FF),
+                    np.median(list_of_FF))
+        else:
+            return None, None, None, None
 
     def calc_stat_PCE(self):
         """
@@ -137,10 +140,13 @@ class Device(object):
             PCE = pixel.jv_curve.PCE
             if PCE is not None:
                 list_of_PCE.append(PCE)
-        return (np.mean(list_of_PCE), 
-                np.std(list_of_PCE), 
-                statistics.q_test(list_of_PCE),
-                np.median(list_of_PCE))
+        if len(list_of_PCE) > 0:
+            return (np.mean(list_of_PCE),
+                    np.std(list_of_PCE),
+                    statistics.q_test(list_of_PCE),
+                    np.median(list_of_PCE))
+        else:
+            return None, None, None, None
 
     def calc_stat_Jsc(self):
         """
@@ -157,10 +163,13 @@ class Device(object):
             Jsc = pixel.jv_curve.Jsc
             if Jsc is not None:
                 list_of_Jsc.append(Jsc)
-        return (np.mean(list_of_Jsc), 
-                np.std(list_of_Jsc), 
-                statistics.q_test(list_of_Jsc),
-                np.median(list_of_Jsc))
+        if len(list_of_Jsc) > 0:
+            return (np.mean(list_of_Jsc),
+                    np.std(list_of_Jsc),
+                    statistics.q_test(list_of_Jsc),
+                    np.median(list_of_Jsc))
+        else:
+            return None, None, None, None
 
     def calc_stat_Voc(self):
         """
@@ -177,10 +186,14 @@ class Device(object):
             Voc = pixel.jv_curve.Voc
             if Voc is not None:
                 list_of_Voc.append(Voc)
-        return (np.mean(list_of_Voc), 
-                np.std(list_of_Voc), 
-                statistics.q_test(list_of_Voc),
-                np.median(list_of_Voc))
+        if len(list_of_Voc) > 0:
+            return (np.mean(list_of_Voc),
+                    np.std(list_of_Voc),
+                    statistics.q_test(list_of_Voc),
+                    np.median(list_of_Voc))
+        else:
+            return None, None, None, None
+
 
     def calc_stat_Isc(self):
         """
@@ -197,7 +210,56 @@ class Device(object):
             Isc = pixel.jv_curve.Isc
             if Isc is not None:
                 list_of_Isc.append(Isc)
-        return (np.mean(list_of_Isc), 
-                np.std(list_of_Isc), 
-                statistics.q_test(list_of_Isc),
-                np.median(list_of_Isc))
+        if len(list_of_Isc) > 0:
+            return (np.mean(list_of_Isc),
+                    np.std(list_of_Isc),
+                    statistics.q_test(list_of_Isc),
+                    np.median(list_of_Isc))
+        else:
+            return None, None, None, None
+
+    def calc_stat_Rs(self):
+        """
+        Calculates series resistance statistics (mean, median, Q-Test, Std. Dev)
+
+        Returns
+        ----------
+        Tuple
+            (mean, standard deviation, Q_Test outliers, median)
+            of series resistances's for this device.
+        """
+        list_of_Rs = []
+        for pixel in self.pixel_list:
+            Rs = pixel.jv_curve.Rs
+            if Rs is not None:
+                list_of_Rs.append(Rs)
+        if len(list_of_Rs) > 0:
+            return (np.mean(list_of_Rs),
+                    np.std(list_of_Rs),
+                    statistics.q_test(list_of_Rs),
+                    np.median(list_of_Rs))
+        else:
+            return None, None, None, None
+
+    def calc_stat_Rsh(self):
+        """
+        Calculates shunt resistance statistics (mean, median, Q-Test, Std. Dev)
+
+        Returns
+        ----------
+        Tuple
+            (mean, standard deviation, Q_Test outliers, median)
+            of shunt resistances's for this device.
+        """
+        list_of_Rsh = []
+        for pixel in self.pixel_list:
+            Rsh = pixel.jv_curve.Rsh
+            if Rsh is not None:
+                list_of_Rsh.append(Rsh)
+        if len(list_of_Rsh) > 0:
+            return (np.mean(list_of_Rsh),
+                    np.std(list_of_Rsh),
+                    statistics.q_test(list_of_Rsh),
+                    np.median(list_of_Rsh))
+        else:
+            return None, None, None, None

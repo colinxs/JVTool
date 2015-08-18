@@ -7,7 +7,7 @@ __email__ = 'colinxs@uw.edu'
 __status__ = 'Development'
 
 import matplotlib
-matplotlib.use('Agg')
+matplotlib.use('Qt4Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 

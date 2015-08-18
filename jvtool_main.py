@@ -83,58 +83,70 @@ def _save_device_parameters_helper(device, new_file):
         file handle of parameter save file
     """
     # file header
-    new_file.write('{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(
+    new_file.write('{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(
         'Pixel Name',
         'Voc (V)',
         'Isc (A)',
         'Area (cm^2)',
         'Jsc (mA/cm^2)',
         'Fill Factor',
-        'PCE'))
+        'PCE',
+        'Rs',
+        'Rsh'))
     # individual pixel parameters
     for pixel in device.pixel_list:
         if pixel.jv_curve.Voc is not None:
             # individual pixel parameters
-            new_file.write('{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(
+            new_file.write('{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(
                 pixel.name,
                 pixel.jv_curve.Voc,
                 pixel.jv_curve.Isc,
                 pixel.jv_curve.area,
                 pixel.jv_curve.Jsc,
                 pixel.jv_curve.FF,
-                pixel.jv_curve.PCE))
+                pixel.jv_curve.PCE,
+                pixel.jv_curve.Rs,
+                pixel.jv_curve.Rsh))
     # device parameter mean
     new_file.write(
-        'Averages:\t{}\t{}\t\t{}\t{}\t{}\n'.format(
+        'Averages:\t{}\t{}\t\t{}\t{}\t{}\t{}\t{}\n'.format(
             device.mean_Voc,
             device.mean_Isc,
             device.mean_Jsc,
             device.mean_FF,
-            device.mean_PCE))
+            device.mean_PCE,
+            device.mean_Rs,
+            device.mean_Rsh))
     # device parameter standard deviation
     new_file.write(
-        'Std. Dev:\t{}\t{}\t\t{}\t{}\t{}\n'.format(
+        'Std. Dev:\t{}\t{}\t\t{}\t{}\t{}\t{}\t{}\n'.format(
             device.std_Voc,
             device.std_Isc,
             device.std_Jsc,
             device.std_FF,
-            device.std_PCE))
+            device.std_PCE,
+            device.std_Rs,
+            device.std_Rsh))
     # device parameter median
     new_file.write(
-        'Median:\t{}\t{}\t\t{}\t{}\t{}\n'.format(
+        'Median:\t{}\t{}\t\t{}\t{}\t{}\t{}\t{}\n'.format(
             device.median_Voc,
             device.median_Isc,
             device.median_Jsc,
             device.median_FF,
-            device.median_PCE))
-    # device parameter median
+            device.median_PCE,
+            device.median_Rs,
+            device.median_Rsh))
+    # device parameter Q-Test Outliers
     new_file.write(
-        'Q-Test Outliers:\t{}\t{}\t\t{}\t{}\t{}\n'.format(
+        'Q-Test Outliers:\t{}\t{}\t\t{}\t{}\t{}\t{}\t{}\n'.format(
             device.outliers_Voc,
             device.outliers_Isc,
             device.outliers_Jsc,
             device.outliers_FF,
-            device.outliers_PCE))
+            device.outliers_PCE,
+            device.outliers_Rs,
+            device.outliers_Rsh))
     print '\'{}\' saved successfully!'.format(new_file.name)
 
 
@@ -162,8 +174,8 @@ def save_plot(device):
         with io_handling.HandleFileSave(image_path, overwrite) as new_file:
             plotting_tools.plot(
                 new_file,
-                pixel.jv_curve.bias_data,
-                pixel.jv_curve.current_density_data,
+                pixel.jv_curve.bias,
+                pixel.jv_curve.current_density,
                 bounds
             )
 

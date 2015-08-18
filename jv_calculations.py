@@ -62,6 +62,8 @@ class JVCurve(object):
         self.FF = self.calc_FF()
         self.PCE = self.calc_PCE()
         self.area = self.calc_area()
+        self.Rs = self.calc_Rs()
+        self.Rsh = self.calc_Rsh()
 
     def calc_area(self):
         """Return the area of this pixel"""
@@ -104,40 +106,19 @@ class JVCurve(object):
         """
         zero_crossings = statistics.find_zero_crossings(self.current_density)
         # if a zero crossing in JV curve exists
-        if len(zero_crossings) == 1:
-            # index of nearest value to Voc
-            zero_index = zero_crossings[0]
-
-            # sets lower and upper limits of subrange of data to fit spline
-            number_of_data_points = len(self.bias)
-            sub_range = number_of_data_points / 10
-            lower_limit_range = zero_index - sub_range
-            upper_limit_range = zero_index + sub_range
-
-            # sets lower_limit_range to 0 if outside of data range
-            if not self._check_index(lower_limit_range):
-                lower_limit_range = 0
-            # sets upper_limit_range to end of data list if outside data range
-            if not self._check_index(upper_limit_range):
-                upper_limit_range = len(self.bias) - 1
-
-            # Takes subrange slice of self.bias and self.current_density
-            # from lower_limit_range to upper_limit_range
-            subregion_of_bias = self.bias[lower_limit_range:upper_limit_range]
-            subregion_of_current_density = (
-                self.current_density[lower_limit_range:upper_limit_range])
-
+        if len(zero_crossings) > 0:
             # fit univariate spline with no smoothing to region surrounding Voc
             # and return largest root
-            current_density_spline = UnivariateSpline(
-                subregion_of_bias,
-                subregion_of_current_density,
-                k=3,
-                s=0)
-            current_density_spline_roots = current_density_spline.roots()
+            current_density_curve_spline = statistics.curve_fit(self.bias,
+                                                      self.current_density,
+                                                      x_point=zero_crossings[-1],
+                                                      range_percent=0.1,
+                                                      order=3,
+                                                      plot=False)
+            current_density_curve_spline_roots = current_density_curve_spline.roots()
             # Voc at end of list, corresponding to largest Voc found
             # noinspection PyPep8Naming
-            Voc = current_density_spline_roots[-1]
+            Voc = current_density_curve_spline_roots[-1]
             if Voc > self.min_Voc:
                 return Voc
             else:
@@ -200,22 +181,19 @@ class JVCurve(object):
 
             # set lower_limit_range to index corresponding to 0 power
             lower_limit_range = self.bias.index(0)
-
             # sets upper_limit_range to index of zero crossing if exists,
             # otherwise set to end of data list
-            upper_limit_range = len(self.bias) - 1
+            upper_limit_range = None
             if len(zero_crossings_of_power) == 1:
                 upper_limit_range = zero_crossings_of_power[-1]
-
             # fit univariate spline with no smoothing to subregion of power
             # curve where maximum power occurs
-            subregion_of_bias = self.bias[lower_limit_range:upper_limit_range]
-            subregion_of_power_curve = self.power_curve[lower_limit_range:
-                                                        upper_limit_range]
-            power_curve_spline = UnivariateSpline(subregion_of_bias,
-                                                  subregion_of_power_curve,
-                                                  k=4,
-                                                  s=0)
+            power_curve_spline = statistics.curve_fit(self.bias,
+                                                      self.power_curve,
+                                                      lower_limit_range=lower_limit_range,
+                                                      upper_limit_range=upper_limit_range,
+                                                      order=4,
+                                                      plot=False)
             power_curve_spline_deriv = power_curve_spline.derivative()
 
             # Find maximum power by finding critical points of power curve fit
@@ -230,5 +208,35 @@ class JVCurve(object):
             theoretical_max_pwr = self.Voc * self.Jsc
             fill_factor = abs(actual_max_pwr / theoretical_max_pwr)
             return fill_factor
+        else:
+            return None
+
+    def calc_Rsh(self):
+        if self.area is not None:
+            x_point = len(self.bias) / 2
+            curve_near_Isc = statistics.curve_fit(self.bias, self.current, x_point=x_point, order=4, range_percent=0.3, plot=False)
+            curve_near_Isc_derivative = curve_near_Isc.derivative()
+            # print curve_near_Isc_derivative(0)
+            # x = np.linspace(-2,2,1000)
+            # plt.interactive(False)
+            # plt.plot(x, curve_near_Isc(x))
+            # plt.show()
+            # plt.draw()
+            return 1 / (curve_near_Isc_derivative(0) / self.area)
+        else:
+            return None
+
+    def calc_Rs(self):
+        if self.area is not None:
+            zero_crossings = statistics.find_zero_crossings(self.current)
+            rough_Voc = zero_crossings[-1]
+            curve_near_Voc = statistics.curve_fit(self.bias, self.current, x_point=rough_Voc, range_percent=0.3, plot=False)
+            curve_near_Voc_derivative = curve_near_Voc.derivative()
+            # x = np.linspace(-2,2,1000)
+            # # plt.interactive(False)
+            # plt.plot(x, curve_near_Voc(x))
+            # plt.show()
+            # plt.draw()
+            return 1 / (curve_near_Voc_derivative(self.Voc) / self.area)
         else:
             return None
