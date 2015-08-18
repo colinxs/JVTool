@@ -8,8 +8,6 @@ __status__ = 'Development'
 
 import os
 import ss_device
-import matplotlib
-matplotlib.use('Agg')
 import numpy as np
 import jv_calculations
 
