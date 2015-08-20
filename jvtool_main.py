@@ -13,62 +13,112 @@ import plotting_tools
 
 
 def main():
+    
+    # get charfile overwrite preference
+    print ('Data file will be named as pixel_filename.txt where'
+           ' pixel_filename is the filename of the corresponding pixel\'s'
+           ' JV data .txt file.')
+    charfile_overwrite = io_handling.prompt_overwrite('device data')
+    
+    # get minimum tolerable Voc
+    print ('What is the minimum allowed Voc values? This is'
+           ' used to eliminate outliers/dead pixels from your data.')
+    minimum_voc = float(raw_input('min? >'))
+    
+    # save JV plots, if desired
+    print 'Do you want images?'
+    plot_data = raw_input('(y/n) > ').lower().startswith('y')
 
+    if plot_data:
+        # get plot overwrite preference
+        print (
+            'Image files will be named as pixel_filename.png where'
+            ' pixel_filename is the filename of the corresponding pixel\'s'
+            ' JV data .txt file.')
+        plot_overwrite = io_handling.prompt_overwrite('image files')
+        # get desired bounds if any for saving JV plots
+        plot_bounds = plotting_tools.get_bounds()
+    
+    # continue to prompt user for directory paths until undesired
     continue_processing = True
     while continue_processing:
         # get directory path
         directory_path = io_handling.get_dir_path()
-        # directory_path = 'C:\\testfiles'
         print '\n'
-        print ('What is the minimum allowed Voc values? This is'
-               ' used to eliminate outliers/dead pixels from your data.')
+        
+        # 
+        if plot_data:
+            _process_data(directory_path=directory_path,
+                         minimum_voc=minimum_voc,
+                         charfile_overwrite=charfile_overwrite,
+                         plot_data=plot_data,
+                         plot_overwrite=plot_overwrite,
+                         plot_bounds=plot_bounds)
+        else:
+            _process_data(directory_path=directory_path,
+                         minimum_voc=minimum_voc,
+                         charfile_overwrite=charfile_overwrite)
 
-        # get minimum tolerable Voc
-        minimum_voc = float(raw_input('min? >'))
-        print '\n'
-        pixel_file_paths = io_handling.get_pixel_file_paths(directory_path)
-        pixel_list = io_handling.extract_data(pixel_file_paths, minimum_voc)
-        device = ss_device.Device(pixel_list, directory_path)
-
-        # save JV plots, if desired
-        print 'Do you want images?'
-        image_answer = raw_input('(y/n) > ')
-        print '\n'
-        if image_answer.lower().startswith('y'):
-            save_plot(device)
-        print '\n'
-
-        # save device parameters
-        save_device_parameters(device)
-        print '\n'
         print 'Do you have another device?'
-        continue_answer = raw_input('(y/n) > ')
-        if not continue_answer.lower().startswith('y'):
-            continue_processing = False
+        continue_answer = raw_input('(y/n) > ').lower().startswith('y')
         print '\n'
+        if not continue_answer:
+            continue_processing = False
 
     print 'Have a great day!'
+    
+def _process_data(directory_path,
+                 minimum_voc,
+                 plot_data=False,
+                 charfile_overwrite=False,
+                 plot_overwrite=False,
+                 plot_bounds=None):
+    """Manages various file process tasks
+
+    Parameters
+    ----------
+    directory_path : str
+        path to folder to be processed
+    minimum_voc : int
+        minimum allowable Voc, used to a simple way to eliminate dead pixels
+    plot_data : bool
+        true if plot of data desired, false otherwise
+    charfile_overwrite : bool
+        true if overwrite of device charfile is desired, false otherwise
+    plot_overwrite : bool
+        true if overwrite of device charfile is desired, false otherwise
+    plot_bounds : tuple
+        tuple of (min_x, max_x, min_y, max_y) bounds for plotting
+    """
+    pixel_file_paths = io_handling.get_pixel_file_paths(directory_path)
+    pixel_list = io_handling.extract_data(pixel_file_paths, minimum_voc)
+    device = ss_device.Device(pixel_list, directory_path)
+    
+    # save device parameters
+    save_device_parameters(device, charfile_overwrite)
+    print '\n'
+    
+    if plot_data:
+        save_plot(device, plot_overwrite, plot_bounds)
+        print '\n'
+    
 
 
-def save_device_parameters(device):
+def save_device_parameters(device, overwrite):
     """Saves this device's parameters in a file named device_name.txt
 
     Parameters
     ----------
     device : Device object
         the current device being saved
+    overwrite : bool
+        true if overwrite of device charfile desired, false otherwise
     """
-    print ('Data file will be named as pixel_filename.txt where'
-           ' pixel_filename is the filename of the corresponding pixel\'s'
-           ' JV data .txt file.')
     filename = device.device_name + '.txt'
     file_path = os.path.join(device.directory, filename)
-    overwrite = io_handling.prompt_overwrite('device data')
     with io_handling.HandleFileSave(file_path, overwrite) as new_file:
-        _save_device_parameters_helper(
-            device,
-            new_file,
-        )
+        _save_device_parameters_helper(device,
+                                       new_file)
 
 
 def _save_device_parameters_helper(device, new_file):
@@ -150,34 +200,26 @@ def _save_device_parameters_helper(device, new_file):
     print '\'{}\' saved successfully!'.format(new_file.name)
 
 
-def save_plot(device):
+def save_plot(device, overwrite, bounds):
     """Saves JV plots for each Pixel in this Device
 
     Parameters
     ----------
     device : Device object
         the current device being considered
+    bounds : tuple
+        tuple of (min_x, max_x, min_y, max_y) bounds for plotting
+    overwrite : bool
+        true if overwrite of device charfile is desired, false otherwise
     """
-    print (
-        'Image files will be named as pixel_filename.png where'
-        ' pixel_filename is the filename of the corresponding pixel\'s'
-        ' JV data .txt file.')
-    # get boolean flag for overwrite permission
-    overwrite = io_handling.prompt_overwrite('image files')
-    print '\n'
-    # get desired bounds if any for saving JV plots
-    bounds = plotting_tools.get_bounds()
-    print '\n'
     for pixel in device.pixel_list:
         image_name = '{}.{}'.format(pixel.name, 'png')
         image_path = os.path.join(device.directory, image_name)
         with io_handling.HandleFileSave(image_path, overwrite) as new_file:
-            plotting_tools.plot(
-                new_file,
-                pixel.jv_curve.bias,
-                pixel.jv_curve.current_density,
-                bounds
-            )
+            plotting_tools.plot(new_file,
+                                pixel.jv_curve.bias,
+                                pixel.jv_curve.current_density,
+                                bounds)
 
 if __name__ == '__main__':
     main()
