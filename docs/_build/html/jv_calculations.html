@@ -1,0 +1,261 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>jv_calculations module &mdash; JVTool  documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="JVTool  documentation" href="index.html" />
+    <link rel="next" title="jvtool_main module" href="jvtool_main.html" />
+    <link rel="prev" title="io_handling module" href="io_handling.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-jv_calculations">
+<span id="jv-calculations-module"></span><h1>jv_calculations module<a class="headerlink" href="#module-jv_calculations" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="jv_calculations.JVCurve">
+<em class="property">class </em><code class="descclassname">jv_calculations.</code><code class="descname">JVCurve</code><span class="sig-paren">(</span><em>bias_data</em>, <em>current_data</em>, <em>current_density_data</em>, <em>minimum_voc</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/jv_calculations.html#JVCurve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#jv_calculations.JVCurve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>The JVCurve class represents a set of JV data</p>
+<dl class="attribute">
+<dt id="jv_calculations.JVCurve.V_to_J">
+<code class="descname">V_to_J</code><a class="headerlink" href="#jv_calculations.JVCurve.V_to_J" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>OrderedDict</em></p>
+<p>a dict of Bias&#8211;&gt;Current Density whose values are represented
+as strings</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="jv_calculations.JVCurve.V_to_I">
+<code class="descname">V_to_I</code><a class="headerlink" href="#jv_calculations.JVCurve.V_to_I" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>OrderedDict</em></p>
+<p>a dict of Bias&#8211;&gt;Current whose values are represented as
+strings</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="jv_calculations.JVCurve.current_density_data">
+<code class="descname">current_density_data</code><a class="headerlink" href="#jv_calculations.JVCurve.current_density_data" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>list</em></p>
+<p>float values of current density data</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="jv_calculations.JVCurve.current_data">
+<code class="descname">current_data</code><a class="headerlink" href="#jv_calculations.JVCurve.current_data" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>list</em></p>
+<p>float values of current data</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="jv_calculations.JVCurve.bias">
+<code class="descname">bias</code><a class="headerlink" href="#jv_calculations.JVCurve.bias" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>float</em></p>
+<p>values of bias data</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="jv_calculations.JVCurve.min_voc">
+<code class="descname">min_voc</code><a class="headerlink" href="#jv_calculations.JVCurve.min_voc" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>float</em></p>
+<p>minimum tolerable pixel Voc to be considered valid</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="jv_calculations.JVCurve.Isc">
+<code class="descname">Isc</code><a class="headerlink" href="#jv_calculations.JVCurve.Isc" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>float</em></p>
+<p>this JV curve&#8217;s short circuit current</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="jv_calculations.JVCurve.Jsc">
+<code class="descname">Jsc</code><a class="headerlink" href="#jv_calculations.JVCurve.Jsc" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>float</em></p>
+<p>this JV curve&#8217;s short circuit current density</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="jv_calculations.JVCurve.Voc">
+<code class="descname">Voc</code><a class="headerlink" href="#jv_calculations.JVCurve.Voc" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>float</em></p>
+<p>this JV curve&#8217;s open circuit voltage</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="jv_calculations.JVCurve.FF">
+<code class="descname">FF</code><a class="headerlink" href="#jv_calculations.JVCurve.FF" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>float</em></p>
+<p>this JV curve&#8217;s fill factor</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="jv_calculations.JVCurve.PCE">
+<code class="descname">PCE</code><a class="headerlink" href="#jv_calculations.JVCurve.PCE" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>float</em></p>
+<p>this JV curve&#8217;s power conversion efficiency</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="jv_calculations.JVCurve.area">
+<code class="descname">area</code><a class="headerlink" href="#jv_calculations.JVCurve.area" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>float</em></p>
+<p>this JV curve&#8217;s area in cm^2</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="jv_calculations.JVCurve.power_curve">
+<code class="descname">power_curve</code><a class="headerlink" href="#jv_calculations.JVCurve.power_curve" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>float</em></p>
+<p>this pixels power density curve defined as J*V</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="jv_calculations.JVCurve.calc_FF">
+<code class="descname">calc_FF</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/jv_calculations.html#JVCurve.calc_FF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#jv_calculations.JVCurve.calc_FF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate and return Fill Factor of this pixel.</p>
+<blockquote>
+<div>Fill Factor of pixel, None if no Voc exists meaning that this pixel is invalid</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="jv_calculations.JVCurve.calc_Isc">
+<code class="descname">calc_Isc</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/jv_calculations.html#JVCurve.calc_Isc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#jv_calculations.JVCurve.calc_Isc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate and return Isc of this pixel.</p>
+<blockquote>
+<div>Isc of pixel, None if no Voc exists meaning that this pixel is invalid.</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="jv_calculations.JVCurve.calc_Jsc">
+<code class="descname">calc_Jsc</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/jv_calculations.html#JVCurve.calc_Jsc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#jv_calculations.JVCurve.calc_Jsc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate and return Jsc of this pixel.</p>
+<blockquote>
+<div>Jsc of pixel, None if no Voc exists meaning that this pixel is invalid.</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="jv_calculations.JVCurve.calc_PCE">
+<code class="descname">calc_PCE</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/jv_calculations.html#JVCurve.calc_PCE"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#jv_calculations.JVCurve.calc_PCE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate and return PCE of this pixel.</p>
+<blockquote>
+<div>PCE of pixel, None if no Voc exists meaning that this pixel is invalid.</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="jv_calculations.JVCurve.calc_Rs">
+<code class="descname">calc_Rs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/jv_calculations.html#JVCurve.calc_Rs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#jv_calculations.JVCurve.calc_Rs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="jv_calculations.JVCurve.calc_Rsh">
+<code class="descname">calc_Rsh</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/jv_calculations.html#JVCurve.calc_Rsh"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#jv_calculations.JVCurve.calc_Rsh" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="jv_calculations.JVCurve.calc_Voc">
+<code class="descname">calc_Voc</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/jv_calculations.html#JVCurve.calc_Voc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#jv_calculations.JVCurve.calc_Voc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate and return the Voc of this pixel.</p>
+<blockquote>
+<div>None if no Voc exists meaning that this pixel is invalid</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="jv_calculations.JVCurve.calc_area">
+<code class="descname">calc_area</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/jv_calculations.html#JVCurve.calc_area"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#jv_calculations.JVCurve.calc_area" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the area of this pixel</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="jv_calculations.JVCurve.create_power_curve">
+<code class="descname">create_power_curve</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/jv_calculations.html#JVCurve.create_power_curve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#jv_calculations.JVCurve.create_power_curve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the power curve of this pixel</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="io_handling.html" title="previous chapter">io_handling module</a></li>
+      <li>Next: <a href="jvtool_main.html" title="next chapter">jvtool_main module</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/jv_calculations.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, Colin Summers.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+      |
+      <a href="_sources/jv_calculations.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

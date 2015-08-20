@@ -1,0 +1,326 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>jv_calculations &mdash; JVTool  documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="JVTool  documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for jv_calculations</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">statistics</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="kn">import</span> <span class="n">UnivariateSpline</span>
+
+
+<span class="c"># noinspection PyPep8Naming</span>
+<span class="k">class</span> <span class="nc">JVCurve</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="JVCurve"><a class="viewcode-back" href="../jv_calculations.html#jv_calculations.JVCurve">[docs]</a><span class="sd">    The JVCurve class represents a set of JV data</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">        V_to_J : OrderedDict</span>
+<span class="sd">            a dict of Bias--&gt;Current Density whose values are represented</span>
+<span class="sd">            as strings</span>
+<span class="sd">        V_to_I : OrderedDict</span>
+<span class="sd">            a dict of Bias--&gt;Current whose values are represented as</span>
+<span class="sd">            strings</span>
+<span class="sd">        current_density_data : list</span>
+<span class="sd">            float values of current density data</span>
+<span class="sd">        current_data: list</span>
+<span class="sd">            float values of current data</span>
+<span class="sd">        bias : float</span>
+<span class="sd">            values of bias data</span>
+<span class="sd">        min_voc : float</span>
+<span class="sd">            minimum tolerable pixel Voc to be considered valid</span>
+<span class="sd">        Isc : float</span>
+<span class="sd">            this JV curve&#39;s short circuit current</span>
+<span class="sd">        Jsc : float</span>
+<span class="sd">            this JV curve&#39;s short circuit current density</span>
+<span class="sd">        Voc : float</span>
+<span class="sd">            this JV curve&#39;s open circuit voltage</span>
+<span class="sd">        FF : float</span>
+<span class="sd">            this JV curve&#39;s fill factor</span>
+<span class="sd">        PCE : float</span>
+<span class="sd">            this JV curve&#39;s power conversion efficiency</span>
+<span class="sd">        area : float</span>
+<span class="sd">            this JV curve&#39;s area in cm^2</span>
+<span class="sd">        power_curve : float</span>
+<span class="sd">            this pixels power density curve defined as J*V</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">bias_data</span><span class="p">,</span>
+        <span class="n">current_data</span><span class="p">,</span>
+        <span class="n">current_density_data</span><span class="p">,</span>
+        <span class="n">minimum_voc</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initializes an instance of Pixel object&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_density</span> <span class="o">=</span> <span class="n">current_density_data</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current</span> <span class="o">=</span> <span class="n">current_data</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bias</span> <span class="o">=</span> <span class="n">bias_data</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_Voc</span> <span class="o">=</span> <span class="n">minimum_voc</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">V_to_J</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">bias_data</span><span class="p">,</span> <span class="n">current_density_data</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">V_to_I</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">bias_data</span><span class="p">,</span> <span class="n">current_data</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">power_curve</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_power_curve</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Voc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_Voc</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Jsc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_Jsc</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Isc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_Isc</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">FF</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_FF</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">PCE</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_PCE</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">area</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_area</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Rs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_Rs</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Rsh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_Rsh</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">calc_area</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the area of this pixel&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="JVCurve.calc_area"><a class="viewcode-back" href="../jv_calculations.html#jv_calculations.JVCurve.calc_area">[docs]</a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">Voc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Isc</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">Jsc</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span>
+
+    <span class="k">def</span> <span class="nf">create_power_curve</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the power curve of this pixel&quot;&quot;&quot;</span></div>
+<div class="viewcode-block" id="JVCurve.create_power_curve"><a class="viewcode-back" href="../jv_calculations.html#jv_calculations.JVCurve.create_power_curve">[docs]</a>        <span class="n">power_curve</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="p">)):</span>
+            <span class="n">power_curve</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_density</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">power_curve</span>
+
+    <span class="k">def</span> <span class="nf">_check_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span></div>
+<span class="sd">        Checks if index is within the bounds of this pixel&#39;s data</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">            index : int</span>
+<span class="sd">                the index to be checked for validity</span>
+
+<span class="sd">        Return:</span>
+<span class="sd">        ----------</span>
+<span class="sd">            True if index is within the bounds of this pixels domain of</span>
+<span class="sd">            valid indices, False otherwise</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">index</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">index</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="p">))</span>
+
+    <span class="c"># noinspection PyPep8Naming</span>
+    <span class="k">def</span> <span class="nf">calc_Voc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="JVCurve.calc_Voc"><a class="viewcode-back" href="../jv_calculations.html#jv_calculations.JVCurve.calc_Voc">[docs]</a><span class="sd">        Calculate and return the Voc of this pixel.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        ----------</span>
+<span class="sd">            None if no Voc exists meaning that this pixel is invalid</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">zero_crossings</span> <span class="o">=</span> <span class="n">statistics</span><span class="o">.</span><span class="n">find_zero_crossings</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_density</span><span class="p">)</span>
+        <span class="c"># if a zero crossing in JV curve exists</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">zero_crossings</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c"># fit univariate spline with no smoothing to region surrounding Voc</span>
+            <span class="c"># and return largest root</span>
+            <span class="n">current_density_curve_spline</span> <span class="o">=</span> <span class="n">statistics</span><span class="o">.</span><span class="n">curve_fit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="p">,</span>
+                                                      <span class="bp">self</span><span class="o">.</span><span class="n">current_density</span><span class="p">,</span>
+                                                      <span class="n">x_point</span><span class="o">=</span><span class="n">zero_crossings</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                                                      <span class="n">range_percent</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+                                                      <span class="n">order</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                                                      <span class="n">plot</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+            <span class="n">current_density_curve_spline_roots</span> <span class="o">=</span> <span class="n">current_density_curve_spline</span><span class="o">.</span><span class="n">roots</span><span class="p">()</span>
+            <span class="c"># Voc at end of list, corresponding to largest Voc found</span>
+            <span class="c"># noinspection PyPep8Naming</span>
+            <span class="n">Voc</span> <span class="o">=</span> <span class="n">current_density_curve_spline_roots</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">Voc</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_Voc</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">Voc</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span>
+
+    <span class="k">def</span> <span class="nf">calc_Jsc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span></div>
+<div class="viewcode-block" id="JVCurve.calc_Jsc"><a class="viewcode-back" href="../jv_calculations.html#jv_calculations.JVCurve.calc_Jsc">[docs]</a><span class="sd">        Calculate and return Jsc of this pixel.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        ----------</span>
+<span class="sd">            Jsc of pixel, None if no Voc exists meaning that this pixel is invalid.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># Look up current density at 0 applied bias</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">Voc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">V_to_J</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span>
+
+    <span class="k">def</span> <span class="nf">calc_Isc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span></div>
+<div class="viewcode-block" id="JVCurve.calc_Isc"><a class="viewcode-back" href="../jv_calculations.html#jv_calculations.JVCurve.calc_Isc">[docs]</a><span class="sd">        Calculate and return Isc of this pixel.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        ----------</span>
+<span class="sd">            Isc of pixel, None if no Voc exists meaning that this pixel is invalid.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">Voc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">V_to_I</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span>
+
+    <span class="k">def</span> <span class="nf">calc_PCE</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span></div>
+<div class="viewcode-block" id="JVCurve.calc_PCE"><a class="viewcode-back" href="../jv_calculations.html#jv_calculations.JVCurve.calc_PCE">[docs]</a><span class="sd">        Calculate and return PCE of this pixel.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        ----------</span>
+<span class="sd">            PCE of pixel, None if no Voc exists meaning that this pixel is invalid.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">Voc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">Voc</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">Jsc</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">FF</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span>
+
+    <span class="k">def</span> <span class="nf">calc_FF</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span></div>
+<div class="viewcode-block" id="JVCurve.calc_FF"><a class="viewcode-back" href="../jv_calculations.html#jv_calculations.JVCurve.calc_FF">[docs]</a><span class="sd">        Calculate and return Fill Factor of this pixel.</span>
+<span class="sd">        </span>
+<span class="sd">        Return</span>
+<span class="sd">        ----------</span>
+<span class="sd">            Fill Factor of pixel, None if no Voc exists meaning that this pixel is invalid</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">Voc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="c"># zero crossings of power curve, ideally should only be one value</span>
+            <span class="n">zero_crossings_of_power</span> <span class="o">=</span> <span class="n">statistics</span><span class="o">.</span><span class="n">find_zero_crossings</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">power_curve</span><span class="p">)</span>
+
+            <span class="c"># set lower_limit_range to index corresponding to 0 power</span>
+            <span class="n">lower_limit_range</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="c"># sets upper_limit_range to index of zero crossing if exists,</span>
+            <span class="c"># otherwise set to end of data list</span>
+            <span class="n">upper_limit_range</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">zero_crossings_of_power</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">upper_limit_range</span> <span class="o">=</span> <span class="n">zero_crossings_of_power</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="c"># fit univariate spline with no smoothing to subregion of power</span>
+            <span class="c"># curve where maximum power occurs</span>
+            <span class="n">power_curve_spline</span> <span class="o">=</span> <span class="n">statistics</span><span class="o">.</span><span class="n">curve_fit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="p">,</span>
+                                                      <span class="bp">self</span><span class="o">.</span><span class="n">power_curve</span><span class="p">,</span>
+                                                      <span class="n">lower_limit_range</span><span class="o">=</span><span class="n">lower_limit_range</span><span class="p">,</span>
+                                                      <span class="n">upper_limit_range</span><span class="o">=</span><span class="n">upper_limit_range</span><span class="p">,</span>
+                                                      <span class="n">order</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+                                                      <span class="n">plot</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+            <span class="n">power_curve_spline_deriv</span> <span class="o">=</span> <span class="n">power_curve_spline</span><span class="o">.</span><span class="n">derivative</span><span class="p">()</span>
+
+            <span class="c"># Find maximum power by finding critical points of power curve fit</span>
+            <span class="c"># and testing each value</span>
+            <span class="n">power_curve_spline_deriv_roots</span> <span class="o">=</span> <span class="n">power_curve_spline_deriv</span><span class="o">.</span><span class="n">roots</span><span class="p">()</span>
+            <span class="n">potential_power</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">power_curve_spline</span><span class="p">(</span><span class="n">power_curve_spline_deriv_roots</span><span class="p">))</span>
+            <span class="n">idx_root_of_max_power</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">potential_power</span><span class="p">))</span>
+
+            <span class="c"># calculate fill factor</span>
+            <span class="n">actual_max_pwr</span> <span class="o">=</span> <span class="n">potential_power</span><span class="p">[</span><span class="n">idx_root_of_max_power</span><span class="p">]</span>
+            <span class="n">theoretical_max_pwr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Voc</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">Jsc</span>
+            <span class="n">fill_factor</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">actual_max_pwr</span> <span class="o">/</span> <span class="n">theoretical_max_pwr</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">fill_factor</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span>
+
+    <span class="k">def</span> <span class="nf">calc_Rsh</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">area</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span></div>
+<div class="viewcode-block" id="JVCurve.calc_Rsh"><a class="viewcode-back" href="../jv_calculations.html#jv_calculations.JVCurve.calc_Rsh">[docs]</a>            <span class="n">x_point</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+            <span class="n">curve_near_Isc</span> <span class="o">=</span> <span class="n">statistics</span><span class="o">.</span><span class="n">curve_fit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">current</span><span class="p">,</span> <span class="n">x_point</span><span class="o">=</span><span class="n">x_point</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">range_percent</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+            <span class="n">curve_near_Isc_derivative</span> <span class="o">=</span> <span class="n">curve_near_Isc</span><span class="o">.</span><span class="n">derivative</span><span class="p">()</span>
+            <span class="c"># print curve_near_Isc_derivative(0)</span>
+            <span class="c"># x = np.linspace(-2,2,1000)</span>
+            <span class="c"># plt.interactive(False)</span>
+            <span class="c"># plt.plot(x, curve_near_Isc(x))</span>
+            <span class="c"># plt.show()</span>
+            <span class="c"># plt.draw()</span>
+            <span class="k">return</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">curve_near_Isc_derivative</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">area</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span>
+
+    <span class="k">def</span> <span class="nf">calc_Rs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">area</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span></div>
+<div class="viewcode-block" id="JVCurve.calc_Rs"><a class="viewcode-back" href="../jv_calculations.html#jv_calculations.JVCurve.calc_Rs">[docs]</a>            <span class="n">zero_crossings</span> <span class="o">=</span> <span class="n">statistics</span><span class="o">.</span><span class="n">find_zero_crossings</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current</span><span class="p">)</span>
+            <span class="n">rough_Voc</span> <span class="o">=</span> <span class="n">zero_crossings</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">curve_near_Voc</span> <span class="o">=</span> <span class="n">statistics</span><span class="o">.</span><span class="n">curve_fit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">current</span><span class="p">,</span> <span class="n">x_point</span><span class="o">=</span><span class="n">rough_Voc</span><span class="p">,</span> <span class="n">range_percent</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+            <span class="n">curve_near_Voc_derivative</span> <span class="o">=</span> <span class="n">curve_near_Voc</span><span class="o">.</span><span class="n">derivative</span><span class="p">()</span>
+            <span class="c"># x = np.linspace(-2,2,1000)</span>
+            <span class="c"># # plt.interactive(False)</span>
+            <span class="c"># plt.plot(x, curve_near_Voc(x))</span>
+            <span class="c"># plt.show()</span>
+            <span class="c"># plt.draw()</span>
+            <span class="k">return</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">curve_near_Voc_derivative</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Voc</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">area</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span>
+</pre></div></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, Colin Summers.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

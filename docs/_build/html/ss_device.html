@@ -1,0 +1,348 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ss_device module &mdash; JVTool  documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="JVTool  documentation" href="index.html" />
+    <link rel="next" title="statistics module" href="statistics.html" />
+    <link rel="prev" title="plotting_tools module" href="plotting_tools.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-ss_device">
+<span id="ss-device-module"></span><h1>ss_device module<a class="headerlink" href="#module-ss_device" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="ss_device.Device">
+<em class="property">class </em><code class="descclassname">ss_device.</code><code class="descname">Device</code><span class="sig-paren">(</span><em>pixel_list</em>, <em>directory</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ss_device.html#Device"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ss_device.Device" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>The Device class represents a composition of Pixel objects.</p>
+<dl class="attribute">
+<dt id="ss_device.Device.directory">
+<code class="descname">directory</code><a class="headerlink" href="#ss_device.Device.directory" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>str</em></p>
+<p>directory of this device&#8217;s JV data.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ss_device.Device.name_to_pixel">
+<code class="descname">name_to_pixel</code><a class="headerlink" href="#ss_device.Device.name_to_pixel" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>dict</em></p>
+<p>map of pixel_name &#8211;&gt; Pixel object</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ss_device.Device.device_name">
+<code class="descname">device_name</code><a class="headerlink" href="#ss_device.Device.device_name" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>str</em></p>
+<p>name of this device corresponding to name of directory
+holding this device&#8217;s JV data</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ss_device.Device.mean_XX">
+<code class="descname">mean_XX</code><a class="headerlink" href="#ss_device.Device.mean_XX" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>float</em></p>
+<p>mean of XX (Fill Factor, Isc, Jsc, Voc, or PCE)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ss_device.Device.std_XX">
+<code class="descname">std_XX</code><a class="headerlink" href="#ss_device.Device.std_XX" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>float</em></p>
+<p>standard deviation of XX (Fill Factor, Isc, Jsc, Voc, or PCE)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ss_device.Device.outliers_XX">
+<code class="descname">outliers_XX</code><a class="headerlink" href="#ss_device.Device.outliers_XX" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>list</em></p>
+<p>Dixon&#8217;s Q_Test outliers of of XX (Fill Factor, Isc, Jsc, Voc, or PCE)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ss_device.Device.median_XX">
+<code class="descname">median_XX</code><a class="headerlink" href="#ss_device.Device.median_XX" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>float</em></p>
+<p>median of XX (Fill Factor, Isc, Jsc, Voc, or PCE)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ss_device.Device.calc_stat_FF">
+<code class="descname">calc_stat_FF</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ss_device.html#Device.calc_stat_FF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ss_device.Device.calc_stat_FF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates Fill Factor statistics (mean, median, Q-Test, Std. Dev)</p>
+<dl class="docutils">
+<dt>Tuple</dt>
+<dd>(mean, standard deviation, Q_Test outliers, median)
+of Fill Factors for this device.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ss_device.Device.calc_stat_Isc">
+<code class="descname">calc_stat_Isc</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ss_device.html#Device.calc_stat_Isc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ss_device.Device.calc_stat_Isc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates Isc statistics (mean, median, Q-Test, Std. Dev)</p>
+<dl class="docutils">
+<dt>Tuple</dt>
+<dd>(mean, standard deviation, Q_Test outliers, median)
+of Isc&#8217;s for this device.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ss_device.Device.calc_stat_Jsc">
+<code class="descname">calc_stat_Jsc</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ss_device.html#Device.calc_stat_Jsc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ss_device.Device.calc_stat_Jsc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates Jsc statistics (mean, median, Q-Test, Std. Dev)</p>
+<dl class="docutils">
+<dt>Tuple</dt>
+<dd>(mean, standard deviation, Q_Test outliers, median)
+of Jsc for this device.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ss_device.Device.calc_stat_PCE">
+<code class="descname">calc_stat_PCE</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ss_device.html#Device.calc_stat_PCE"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ss_device.Device.calc_stat_PCE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates PCE statistics (mean, median, Q-Test, Std. Dev)</p>
+<dl class="docutils">
+<dt>Tuple</dt>
+<dd>(mean, standard deviation, Q_Test outliers, and median)
+of Power Conversion Efficiency for this device.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ss_device.Device.calc_stat_Rs">
+<code class="descname">calc_stat_Rs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ss_device.html#Device.calc_stat_Rs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ss_device.Device.calc_stat_Rs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates series resistance statistics (mean, median, Q-Test, Std. Dev)</p>
+<dl class="docutils">
+<dt>Tuple</dt>
+<dd>(mean, standard deviation, Q_Test outliers, median)
+of series resistances&#8217;s for this device.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ss_device.Device.calc_stat_Rsh">
+<code class="descname">calc_stat_Rsh</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ss_device.html#Device.calc_stat_Rsh"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ss_device.Device.calc_stat_Rsh" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates shunt resistance statistics (mean, median, Q-Test, Std. Dev)</p>
+<dl class="docutils">
+<dt>Tuple</dt>
+<dd>(mean, standard deviation, Q_Test outliers, median)
+of shunt resistances&#8217;s for this device.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ss_device.Device.calc_stat_Voc">
+<code class="descname">calc_stat_Voc</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ss_device.html#Device.calc_stat_Voc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ss_device.Device.calc_stat_Voc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates Voc statistics (mean, median, Q-Test, Std. Dev)</p>
+<dl class="docutils">
+<dt>Tuple</dt>
+<dd>(mean, standard deviation, Q_Test outliers, median)
+of Voc&#8217;s for this device.</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ss_device.Pixel">
+<em class="property">class </em><code class="descclassname">ss_device.</code><code class="descname">Pixel</code><span class="sig-paren">(</span><em>name</em>, <em>directory</em>, <em>jv_curve</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ss_device.html#Pixel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ss_device.Pixel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>The Pixel class represents a set of JV data for an individual pixel
+of a photovoltaic device.</p>
+<dl class="attribute">
+<dt id="ss_device.Pixel.directory">
+<code class="descname">directory</code><a class="headerlink" href="#ss_device.Pixel.directory" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>str</em></p>
+<p>the directory containing`this pixel&#8217;s JV data</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ss_device.Pixel.name">
+<code class="descname">name</code><a class="headerlink" href="#ss_device.Pixel.name" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>str</em></p>
+<p>the filename of this pixel&#8217;s JV data</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ss_device.Pixel.V_to_J">
+<code class="descname">V_to_J</code><a class="headerlink" href="#ss_device.Pixel.V_to_J" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>OrderedDict</em></p>
+<p>a dict of Bias&#8211;&gt;Current Density whose values are represented
+as strings</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ss_device.Pixel.V_to_I">
+<code class="descname">V_to_I</code><a class="headerlink" href="#ss_device.Pixel.V_to_I" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>OrderedDict</em></p>
+<p>a dict of Bias&#8211;&gt;Current whose values are represented as
+strings</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ss_device.Pixel.current_density_data">
+<code class="descname">current_density_data</code><a class="headerlink" href="#ss_device.Pixel.current_density_data" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>list</em></p>
+<p>float values of current density data</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ss_device.Pixel.current_data">
+<code class="descname">current_data</code><a class="headerlink" href="#ss_device.Pixel.current_data" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>list</em></p>
+<p>float values of current data</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ss_device.Pixel.bias">
+<code class="descname">bias</code><a class="headerlink" href="#ss_device.Pixel.bias" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>float</em></p>
+<p>values of bias data</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ss_device.Pixel.min_voc">
+<code class="descname">min_voc</code><a class="headerlink" href="#ss_device.Pixel.min_voc" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>float</em></p>
+<p>minimum tolerable pixel Voc to be considered valid</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ss_device.Pixel.Isc">
+<code class="descname">Isc</code><a class="headerlink" href="#ss_device.Pixel.Isc" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>float</em></p>
+<p>this pixel&#8217;s short circuit current</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ss_device.Pixel.Jsc">
+<code class="descname">Jsc</code><a class="headerlink" href="#ss_device.Pixel.Jsc" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>float</em></p>
+<p>this pixel&#8217;s short circuit current density</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ss_device.Pixel.Voc">
+<code class="descname">Voc</code><a class="headerlink" href="#ss_device.Pixel.Voc" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>float</em></p>
+<p>this pixel&#8217;s open circuit voltage</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ss_device.Pixel.FF">
+<code class="descname">FF</code><a class="headerlink" href="#ss_device.Pixel.FF" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>float</em></p>
+<p>this pixel&#8217;s fill factor</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ss_device.Pixel.PCE">
+<code class="descname">PCE</code><a class="headerlink" href="#ss_device.Pixel.PCE" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>float</em></p>
+<p>this pixel&#8217;s power conversion efficiency</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ss_device.Pixel.area">
+<code class="descname">area</code><a class="headerlink" href="#ss_device.Pixel.area" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>float</em></p>
+<p>this pixel&#8217;s area in cm^2</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ss_device.Pixel.power_curve">
+<code class="descname">power_curve</code><a class="headerlink" href="#ss_device.Pixel.power_curve" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>float</em></p>
+<p>this pixels power density curve defined as J*V</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="plotting_tools.html" title="previous chapter">plotting_tools module</a></li>
+      <li>Next: <a href="statistics.html" title="next chapter">statistics module</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/ss_device.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, Colin Summers.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+      |
+      <a href="_sources/ss_device.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

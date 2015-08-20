@@ -1,0 +1,164 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>plotting_tools &mdash; JVTool  documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="JVTool  documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for plotting_tools</h1><div class="highlight"><pre>
+<span class="n">__author__</span> <span class="o">=</span> <span class="s">&#39;Colin Summers&#39;</span>
+<span class="n">__copyright__</span> <span class="o">=</span> <span class="s">&#39;Copyright 2015, Ginger Lab&#39;</span>
+<span class="n">__maintainer__</span> <span class="o">=</span> <span class="s">&#39;Colin Summers&#39;</span>
+<span class="n">__email__</span> <span class="o">=</span> <span class="s">&#39;colinxs@uw.edu&#39;</span>
+<span class="n">__status__</span> <span class="o">=</span> <span class="s">&#39;Development&#39;</span>
+
+<span class="kn">import</span> <span class="nn">matplotlib</span>
+<span class="n">matplotlib</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s">&#39;Qt4Agg&#39;</span><span class="p">)</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+
+<span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="n">new_file</span><span class="p">,</span> <span class="n">x_data</span><span class="p">,</span> <span class="n">y_data</span><span class="p">,</span> <span class="n">bounds</span><span class="p">,</span> <span class="n">x_label</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">y_label</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="plot"><a class="viewcode-back" href="../plotting_tools.html#plotting_tools.plot">[docs]</a><span class="sd">    Saves a plot as &#39;new_file.name&#39; on given bounds or auto-ranged</span>
+<span class="sd">    bounds if none given.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    new_file : File object</span>
+<span class="sd">        file handle of plotting output file</span>
+<span class="sd">    x_data : list</span>
+<span class="sd">        x_data to be plotted against</span>
+<span class="sd">    y_data : list</span>
+<span class="sd">        y_data to be plotted</span>
+<span class="sd">    bounds : tuple</span>
+<span class="sd">        bounds to be plotted against (min_x, max_x, min_y, max_y)    </span>
+<span class="sd">   &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">bounds</span><span class="p">:</span>
+        <span class="n">min_x</span><span class="p">,</span> <span class="n">max_x</span><span class="p">,</span> <span class="n">min_y</span><span class="p">,</span> <span class="n">max_y</span> <span class="o">=</span> <span class="n">bounds</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">min_x</span> <span class="o">=</span> <span class="n">x_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">max_x</span> <span class="o">=</span> <span class="n">x_data</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">y_data_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">y_data</span><span class="p">)</span>
+        <span class="n">min_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amin</span><span class="p">(</span><span class="n">y_data_array</span><span class="p">)</span>
+        <span class="n">max_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">y_data_array</span><span class="p">)</span>
+        
+    <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_data</span><span class="p">,</span> <span class="n">y_data</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">x_label</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">y_label</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">axis</span><span class="p">([</span><span class="n">min_x</span><span class="p">,</span> <span class="n">max_x</span><span class="p">,</span> <span class="n">min_y</span><span class="p">,</span> <span class="n">max_y</span><span class="p">])</span>
+    <span class="c"># ax.set_aspect(&#39;equal&#39;)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s">&#39;both&#39;</span><span class="p">)</span>
+    <span class="c"># set the x-spine (see below for more info on `set_position`)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s">&#39;left&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_position</span><span class="p">(</span><span class="s">&#39;zero&#39;</span><span class="p">)</span>
+    <span class="c"># turn off the right spine/ticks</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s">&#39;right&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="s">&#39;none&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">tick_left</span><span class="p">()</span>
+    <span class="c"># set the y-spine</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s">&#39;bottom&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_position</span><span class="p">(</span><span class="s">&#39;zero&#39;</span><span class="p">)</span>
+    <span class="c"># turn off the top spine/ticks</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s">&#39;top&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="s">&#39;none&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">tick_bottom</span><span class="p">()</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">new_file</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="s">&#39;png&#39;</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s"> saved successfully!&#39;</span> <span class="o">%</span> <span class="n">new_file</span><span class="o">.</span><span class="n">name</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">get_bounds</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Gets desired plotting bounds from user, returns None if no bounds </span></div>
+<div class="viewcode-block" id="get_bounds"><a class="viewcode-back" href="../plotting_tools.html#plotting_tools.get_bounds">[docs]</a><span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    ----------</span>
+<span class="sd">    tuple</span>
+<span class="sd">        (min_x, max_x, min_y, max_y)</span>
+<span class="sd">    &quot;&quot;&quot;</span> 
+    <span class="k">print</span> <span class="s">&#39;Do you want to set bounds for JV data plot (else auto-range)?&#39;</span>
+    <span class="n">bounds_answer</span> <span class="o">=</span> <span class="nb">raw_input</span><span class="p">(</span><span class="s">&#39;(y/n) &gt; &#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">bounds_answer</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;y&#39;</span><span class="p">):</span>
+        <span class="k">print</span> <span class="s">&#39;What bounds do you want to plot your JV curve on?&#39;</span>
+        <span class="n">min_x</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">raw_input</span><span class="p">(</span><span class="s">&#39;min X &gt; &#39;</span><span class="p">))</span>
+        <span class="n">max_x</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">raw_input</span><span class="p">(</span><span class="s">&#39;max X &gt; &#39;</span><span class="p">))</span>
+        <span class="n">min_y</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">raw_input</span><span class="p">(</span><span class="s">&#39;min Y &gt; &#39;</span><span class="p">))</span>
+        <span class="n">max_y</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">raw_input</span><span class="p">(</span><span class="s">&#39;max Y &gt; &#39;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">min_x</span><span class="p">,</span> <span class="n">max_x</span><span class="p">,</span> <span class="n">min_y</span><span class="p">,</span> <span class="n">max_y</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">None</span>
+</pre></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, Colin Summers.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

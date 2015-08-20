@@ -1,0 +1,287 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>statistics &mdash; JVTool  documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="JVTool  documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for statistics</h1><div class="highlight"><pre>
+<span class="n">__author__</span> <span class="o">=</span> <span class="s">&#39;Colin Summers&#39;</span>
+<span class="n">__copyright__</span> <span class="o">=</span> <span class="s">&#39;Copyright 2015, Ginger Lab&#39;</span>
+<span class="n">__maintainer__</span> <span class="o">=</span> <span class="s">&#39;Colin Summers&#39;</span>
+<span class="n">__email__</span> <span class="o">=</span> <span class="s">&#39;colinxs@uw.edu&#39;</span>
+<span class="n">__status__</span> <span class="o">=</span> <span class="s">&#39;Development&#39;</span>   
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="kn">import</span> <span class="n">UnivariateSpline</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+
+<span class="c"># noinspection PyPep8Naming</span>
+<div class="viewcode-block" id="q_test"><a class="viewcode-back" href="../statistics.html#statistics.q_test">[docs]</a><span class="k">def</span> <span class="nf">q_test</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">qtest</span><span class="o">=</span><span class="s">&#39;q99&#39;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Performs a Dixon&#39;s Q-Test on the values in data</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">            data : list, optional</span>
+<span class="sd">                A ordered or unordered list of data points (int or float).</span>
+<span class="sd">            left : bool, optional</span>
+<span class="sd">                Q-test of minimum value in the ordered list if True.</span>
+<span class="sd">            right : bool, optional</span>
+<span class="sd">                Q-test of maximum value in the ordered list if True.</span>
+<span class="sd">            q_test : str, optional</span>
+<span class="sd">                A dictionary of Q-values for a given confidence level,</span>
+<span class="sd">                where the dict. keys are sample sizes N, and the associated values</span>
+<span class="sd">                are the corresponding critical Q values. E.g.,</span>
+<span class="sd">                {3: 0.97, 4: 0.829, 5: 0.71, 6: 0.625, ...}</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        ----------</span>
+<span class="sd">        list</span>
+<span class="sd">            a list of 2 values for the outliers, or None.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        ----------</span>
+<span class="sd">           for [1,1,1] -&gt; [None, None]\n</span>
+<span class="sd">           for [5,1,1] -&gt; [None, 5]\n</span>
+<span class="sd">           for [5,1,5] -&gt; [1, None]\n</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">q90</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="mf">0.941</span><span class="p">,</span> <span class="mf">0.765</span><span class="p">,</span> <span class="mf">0.642</span><span class="p">,</span> <span class="mf">0.56</span><span class="p">,</span> <span class="mf">0.507</span><span class="p">,</span> <span class="mf">0.468</span><span class="p">,</span> <span class="mf">0.437</span><span class="p">,</span>
+            <span class="mf">0.412</span><span class="p">,</span> <span class="mf">0.392</span><span class="p">,</span> <span class="mf">0.376</span><span class="p">,</span> <span class="mf">0.361</span><span class="p">,</span> <span class="mf">0.349</span><span class="p">,</span> <span class="mf">0.338</span><span class="p">,</span> <span class="mf">0.329</span><span class="p">,</span>
+            <span class="mf">0.32</span><span class="p">,</span> <span class="mf">0.313</span><span class="p">,</span> <span class="mf">0.306</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.295</span><span class="p">,</span> <span class="mf">0.29</span><span class="p">,</span> <span class="mf">0.285</span><span class="p">,</span> <span class="mf">0.281</span><span class="p">,</span>
+            <span class="mf">0.277</span><span class="p">,</span> <span class="mf">0.273</span><span class="p">,</span> <span class="mf">0.269</span><span class="p">,</span> <span class="mf">0.266</span><span class="p">,</span> <span class="mf">0.263</span><span class="p">,</span> <span class="mf">0.26</span>
+        <span class="p">]</span>
+
+        <span class="n">q95</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="mf">0.97</span><span class="p">,</span> <span class="mf">0.829</span><span class="p">,</span> <span class="mf">0.71</span><span class="p">,</span> <span class="mf">0.625</span><span class="p">,</span> <span class="mf">0.568</span><span class="p">,</span> <span class="mf">0.526</span><span class="p">,</span> <span class="mf">0.493</span><span class="p">,</span> <span class="mf">0.466</span><span class="p">,</span>
+            <span class="mf">0.444</span><span class="p">,</span> <span class="mf">0.426</span><span class="p">,</span> <span class="mf">0.41</span><span class="p">,</span> <span class="mf">0.396</span><span class="p">,</span> <span class="mf">0.384</span><span class="p">,</span> <span class="mf">0.374</span><span class="p">,</span> <span class="mf">0.365</span><span class="p">,</span> <span class="mf">0.356</span><span class="p">,</span>
+            <span class="mf">0.349</span><span class="p">,</span> <span class="mf">0.342</span><span class="p">,</span> <span class="mf">0.337</span><span class="p">,</span> <span class="mf">0.331</span><span class="p">,</span> <span class="mf">0.326</span><span class="p">,</span> <span class="mf">0.321</span><span class="p">,</span> <span class="mf">0.317</span><span class="p">,</span> <span class="mf">0.312</span><span class="p">,</span>
+            <span class="mf">0.308</span><span class="p">,</span> <span class="mf">0.305</span><span class="p">,</span> <span class="mf">0.301</span><span class="p">,</span> <span class="mf">0.29</span>
+        <span class="p">]</span>
+
+        <span class="n">q99</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="mf">0.994</span><span class="p">,</span> <span class="mf">0.926</span><span class="p">,</span> <span class="mf">0.821</span><span class="p">,</span> <span class="mf">0.74</span><span class="p">,</span> <span class="mf">0.68</span><span class="p">,</span> <span class="mf">0.634</span><span class="p">,</span> <span class="mf">0.598</span><span class="p">,</span> <span class="mf">0.568</span><span class="p">,</span>
+            <span class="mf">0.542</span><span class="p">,</span> <span class="mf">0.522</span><span class="p">,</span> <span class="mf">0.503</span><span class="p">,</span> <span class="mf">0.488</span><span class="p">,</span> <span class="mf">0.475</span><span class="p">,</span> <span class="mf">0.463</span><span class="p">,</span> <span class="mf">0.452</span><span class="p">,</span> <span class="mf">0.442</span><span class="p">,</span>
+            <span class="mf">0.433</span><span class="p">,</span> <span class="mf">0.425</span><span class="p">,</span> <span class="mf">0.418</span><span class="p">,</span> <span class="mf">0.411</span><span class="p">,</span> <span class="mf">0.404</span><span class="p">,</span> <span class="mf">0.399</span><span class="p">,</span> <span class="mf">0.393</span><span class="p">,</span> <span class="mf">0.388</span><span class="p">,</span>
+            <span class="mf">0.384</span><span class="p">,</span> <span class="mf">0.38</span><span class="p">,</span> <span class="mf">0.376</span><span class="p">,</span> <span class="mf">0.372</span>
+        <span class="p">]</span>
+
+        <span class="n">Q90</span> <span class="o">=</span> <span class="p">{</span><span class="n">n</span><span class="p">:</span> <span class="n">q</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">q</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">q90</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="n">q90</span><span class="p">)}</span>
+        <span class="n">Q95</span> <span class="o">=</span> <span class="p">{</span><span class="n">n</span><span class="p">:</span> <span class="n">q</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">q</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">q95</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="n">q95</span><span class="p">)}</span>
+        <span class="n">Q99</span> <span class="o">=</span> <span class="p">{</span><span class="n">n</span><span class="p">:</span> <span class="n">q</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">q</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">q99</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="n">q99</span><span class="p">)}</span>
+
+        <span class="k">if</span> <span class="n">qtest</span> <span class="o">==</span> <span class="s">&#39;q90&#39;</span><span class="p">:</span>
+            <span class="n">q_dict</span> <span class="o">=</span> <span class="n">Q90</span>
+        <span class="k">elif</span> <span class="n">qtest</span> <span class="o">==</span> <span class="s">&#39;q95&#39;</span><span class="p">:</span>
+            <span class="n">q_dict</span> <span class="o">=</span> <span class="n">Q95</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">q_dict</span> <span class="o">=</span> <span class="n">Q99</span>
+
+        <span class="k">assert</span><span class="p">(</span><span class="n">left</span> <span class="ow">or</span> <span class="n">right</span><span class="p">),</span> <span class="s">&#39;At least one of the variables, `left` or `right`, must be True.&#39;</span>
+        <span class="k">assert</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">3</span><span class="p">),</span> <span class="s">&#39;At least 3 data points are required&#39;</span>
+        <span class="k">assert</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="nb">max</span><span class="p">(</span><span class="n">q_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">())),</span> <span class="s">&#39;Sample size too large&#39;</span>
+
+        <span class="n">sdata</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">Q_mindiff</span><span class="p">,</span> <span class="n">Q_maxdiff</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">left</span><span class="p">:</span>
+            <span class="n">Q_min</span> <span class="o">=</span> <span class="p">(</span><span class="n">sdata</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">sdata</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">Q_min</span> <span class="o">/=</span> <span class="p">(</span><span class="n">sdata</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">sdata</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">except</span> <span class="ne">ZeroDivisionError</span><span class="p">:</span>
+                <span class="k">pass</span>
+            <span class="n">Q_mindiff</span> <span class="o">=</span> <span class="p">(</span><span class="n">Q_min</span> <span class="o">-</span> <span class="n">q_dict</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)],</span> <span class="n">sdata</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">right</span><span class="p">:</span>
+            <span class="n">Q_max</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">((</span><span class="n">sdata</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">sdata</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">Q_max</span> <span class="o">/=</span> <span class="nb">abs</span><span class="p">((</span><span class="n">sdata</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">sdata</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+            <span class="k">except</span> <span class="ne">ZeroDivisionError</span><span class="p">:</span>
+                <span class="k">pass</span>
+            <span class="n">Q_maxdiff</span> <span class="o">=</span> <span class="p">(</span><span class="n">Q_max</span> <span class="o">-</span> <span class="n">q_dict</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)],</span> <span class="n">sdata</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">Q_mindiff</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">Q_maxdiff</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">outliers</span> <span class="o">=</span> <span class="p">[</span><span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">]</span>
+
+        <span class="k">elif</span> <span class="n">Q_mindiff</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">Q_maxdiff</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="n">outliers</span> <span class="o">=</span> <span class="p">[</span><span class="n">Q_mindiff</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">Q_maxdiff</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+
+        <span class="k">elif</span> <span class="n">Q_mindiff</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">Q_maxdiff</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="n">outliers</span> <span class="o">=</span> <span class="p">[</span><span class="n">Q_mindiff</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">None</span><span class="p">]</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">outliers</span> <span class="o">=</span> <span class="p">[</span><span class="bp">None</span><span class="p">,</span> <span class="n">Q_maxdiff</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+
+        <span class="k">return</span> <span class="n">outliers</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">None</span>
+        
+</div>
+<div class="viewcode-block" id="find_zero_crossings"><a class="viewcode-back" href="../statistics.html#statistics.find_zero_crossings">[docs]</a><span class="k">def</span> <span class="nf">find_zero_crossings</span><span class="p">(</span><span class="n">a_list</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return the zero crossings in a list of numbers.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    a_list : list</span>
+<span class="sd">        A list of numbers, either as float or int</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    ----------</span>
+<span class="sd">    list</span>
+<span class="sd">        list of indices just after zero crossing</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    ----------</span>
+<span class="sd">        $ pixel.bias = [-12, -3, -2, 2]\n</span>
+<span class="sd">        $ print pixel._find_zero_crossings(pixel.bias)\n</span>
+<span class="sd">        $ [3]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">a_list</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+    <span class="n">neg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
+    <span class="n">neg_to_pos_crossing</span> <span class="o">=</span> <span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">&amp;</span> <span class="n">neg</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">pos_to_neg_crossing</span> <span class="o">=</span> <span class="n">pos</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&amp;</span> <span class="n">neg</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+    <span class="n">all_zero_crossings</span> <span class="o">=</span> <span class="n">neg_to_pos_crossing</span> <span class="o">|</span> <span class="n">pos_to_neg_crossing</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">all_zero_crossings</span> <span class="o">==</span> <span class="bp">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+</div>
+<div class="viewcode-block" id="curve_fit"><a class="viewcode-back" href="../statistics.html#statistics.curve_fit">[docs]</a><span class="k">def</span> <span class="nf">curve_fit</span><span class="p">(</span><span class="n">x_data</span><span class="p">,</span> <span class="n">y_data</span><span class="p">,</span> <span class="n">x_point</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">range_percent</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">lower_limit_range</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">upper_limit_range</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+
+    <span class="k">if</span> <span class="n">x_point</span> <span class="ow">and</span> <span class="n">upper_limit_range</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="c"># sets lower and upper limits of subrange of data to fit spline to +/- range_percent% of data around Voc</span>
+        <span class="c"># number_of_data_points = len(x_data)</span>
+        <span class="n">data_range</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x_data</span><span class="p">)</span> <span class="o">*</span> <span class="n">range_percent</span><span class="p">)</span>
+        <span class="n">lower_limit_range</span> <span class="o">=</span> <span class="n">x_point</span> <span class="o">-</span> <span class="n">data_range</span>
+        <span class="n">upper_limit_range</span> <span class="o">=</span> <span class="n">x_point</span> <span class="o">+</span> <span class="n">data_range</span>
+    <span class="k">elif</span> <span class="n">upper_limit_range</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">upper_limit_range</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x_data</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+
+    <span class="c"># sets lower_limit_range to 0 if outside of data range</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">check_index</span><span class="p">(</span><span class="n">lower_limit_range</span><span class="p">,</span> <span class="n">x_data</span><span class="p">):</span>
+        <span class="n">lower_limit_range</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="c"># sets upper_limit_range to end of data list if outside data range</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">check_index</span><span class="p">(</span><span class="n">upper_limit_range</span><span class="p">,</span> <span class="n">x_data</span><span class="p">):</span>
+        <span class="n">upper_limit_range</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x_data</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+
+    <span class="c"># Takes subrange slice of x_data and y_data</span>
+    <span class="c"># from lower_limit_range to upper_limit_range</span>
+    <span class="n">x_subregion</span> <span class="o">=</span> <span class="n">x_data</span><span class="p">[</span><span class="n">lower_limit_range</span><span class="p">:</span><span class="n">upper_limit_range</span><span class="p">]</span>
+    <span class="n">y_subregion</span> <span class="o">=</span> <span class="n">y_data</span><span class="p">[</span><span class="n">lower_limit_range</span><span class="p">:</span><span class="n">upper_limit_range</span><span class="p">]</span>
+
+    <span class="c"># fit univariate spline with no smoothing to region surronding Voc</span>
+    <span class="c"># and return largest root</span>
+
+    <span class="n">curve</span> <span class="o">=</span> <span class="n">UnivariateSpline</span><span class="p">(</span>
+        <span class="n">x_subregion</span><span class="p">,</span>
+        <span class="n">y_subregion</span><span class="p">,</span>
+        <span class="n">k</span><span class="o">=</span><span class="n">order</span><span class="p">,</span>
+        <span class="n">s</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
+        <span class="k">print</span> <span class="n">lower_limit_range</span><span class="p">,</span> <span class="n">upper_limit_range</span>
+        <span class="k">print</span> <span class="nb">len</span><span class="p">(</span><span class="n">x_data</span><span class="p">)</span>
+        <span class="k">print</span> <span class="n">x_data</span><span class="p">[</span><span class="n">lower_limit_range</span><span class="p">]</span>
+        <span class="k">print</span> <span class="n">x_data</span><span class="p">[</span><span class="n">upper_limit_range</span><span class="p">]</span>
+
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">x_data</span><span class="p">[</span><span class="n">lower_limit_range</span><span class="p">],</span> <span class="n">x_data</span><span class="p">[</span><span class="n">upper_limit_range</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="n">x_subregion</span><span class="p">)</span> <span class="o">*</span> <span class="mi">10</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">curve</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_subregion</span><span class="p">,</span> <span class="n">y_subregion</span><span class="p">,</span> <span class="s">&#39;bo&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ioff</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">curve</span>
+</div>
+<div class="viewcode-block" id="check_index"><a class="viewcode-back" href="../statistics.html#statistics.check_index">[docs]</a><span class="k">def</span> <span class="nf">check_index</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">a_list</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Checks if index is within the bounds of this pixel&#39;s data</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">        index : int</span>
+<span class="sd">            the index to be checked for validity</span>
+
+<span class="sd">    Return:</span>
+<span class="sd">    ----------</span>
+<span class="sd">        True if index is within the bounds of this pixels domain of</span>
+<span class="sd">        valid indices, False otherwise</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">index</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">index</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">a_list</span><span class="p">))</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, Colin Summers.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

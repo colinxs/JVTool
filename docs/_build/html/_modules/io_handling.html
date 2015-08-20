@@ -1,0 +1,282 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>io_handling &mdash; JVTool  documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="JVTool  documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for io_handling</h1><div class="highlight"><pre>
+<span class="n">__author__</span> <span class="o">=</span> <span class="s">&#39;Colin Summers&#39;</span>
+<span class="n">__copyright__</span> <span class="o">=</span> <span class="s">&#39;Copyright 2015, Ginger Lab&#39;</span>
+<span class="n">__maintainer__</span> <span class="o">=</span> <span class="s">&#39;Colin Summers&#39;</span>
+<span class="n">__email__</span> <span class="o">=</span> <span class="s">&#39;colinxs@uw.edu&#39;</span>
+<span class="n">__status__</span> <span class="o">=</span> <span class="s">&#39;Development&#39;</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">ss_device</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">jv_calculations</span>
+
+
+<span class="k">def</span> <span class="nf">get_dir_path</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="get_dir_path"><a class="viewcode-back" href="../io_handling.html#io_handling.get_dir_path">[docs]</a><span class="sd">    Gets a director path from the user, checking if path given is a valid</span>
+<span class="sd">    directory (i.e. exists and is not a file).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    ----------</span>
+<span class="sd">    str</span>
+<span class="sd">        valid pathname of a directory</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">print</span> <span class="s">&#39;Give me the path to the directory containing JV data as .txt files&#39;</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="nb">raw_input</span><span class="p">(</span><span class="s">&#39;&gt;&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">print</span> <span class="s">&#39;Path doesn</span><span class="se">\&#39;</span><span class="s">t exist or points to a file, not a directory&#39;</span>
+        <span class="k">return</span> <span class="n">get_dir_path</span><span class="p">()</span>
+
+
+<span class="k">class</span> <span class="nc">HandleFileSave</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span></div>
+<div class="viewcode-block" id="HandleFileSave"><a class="viewcode-back" href="../io_handling.html#io_handling.HandleFileSave">[docs]</a><span class="sd">    This class implements the context manager protocol as defined by</span>
+<span class="sd">    https://www.python.org/dev/peps/pep-0343/. It is a modification to</span>
+<span class="sd">    the built-in &#39;open()&#39; function. It will generate a new file object,</span>
+<span class="sd">    avoiding file collisions if indicated, and handle file overwrites</span>
+<span class="sd">    on files that are locked (i.e. open in another program).</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    path : str</span>
+<span class="sd">        desired path for new file object</span>
+<span class="sd">    overwrite : bool</span>
+<span class="sd">        True if file overwrite is desired, false otherwise</span>
+<span class="sd">    file_handler : file object</span>
+<span class="sd">        file handle of new file to save</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">overwrite</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">overwrite</span> <span class="o">=</span> <span class="n">overwrite</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="k">def</span> <span class="nf">_open</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">overwrite</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_open_recursive</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">n</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span>
+                <span class="k">while</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+                    <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_modify_filename</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+                    <span class="n">n</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_open_recursive</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_open_recursive</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_open_recursive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s">&#39;wb&#39;</span><span class="p">)</span>
+            <span class="k">print</span> <span class="s">&#39;Saving </span><span class="se">\&#39;</span><span class="s">{}</span><span class="se">\&#39;</span><span class="s">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">EnvironmentError</span><span class="p">:</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_modify_filename</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+            <span class="n">n</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_open_recursive</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_open</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&#39;self.file_handler never set.&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span>
+
+    <span class="k">def</span> <span class="nf">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_value</span><span class="p">,</span> <span class="n">traceback</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="c"># pylint: disable=C0103</span>
+    <span class="k">def</span> <span class="nf">_modify_filename</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+        <span class="n">root</span><span class="p">,</span> <span class="n">suffix</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="s">&#39;{}_({}){}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">root</span><span class="p">,</span>
+            <span class="n">n</span><span class="p">,</span>
+            <span class="n">suffix</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">path</span>
+
+
+<span class="k">def</span> <span class="nf">get_pixel_file_paths</span><span class="p">(</span><span class="n">directory</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span></div>
+<div class="viewcode-block" id="get_pixel_file_paths"><a class="viewcode-back" href="../io_handling.html#io_handling.get_pixel_file_paths">[docs]</a><span class="sd">    Gets a list of all valid pixel JV data file paths contained in directory</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    directory : str</span>
+<span class="sd">        the directory to scan</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    ----------</span>
+<span class="sd">    list</span>
+<span class="sd">        list of pixel JV data file paths</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">pixel_files_paths</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">a_file</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">directory</span><span class="p">):</span>
+        <span class="c"># if file in directory is a text file that is not the char file</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">a_file</span><span class="p">))</span> <span class="ow">and</span>
+                <span class="n">a_file</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&#39;.txt&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="s">&#39;char&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">a_file</span><span class="p">):</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">a_file</span><span class="p">)</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">as</span> <span class="n">pixel_file</span><span class="p">:</span>
+                <span class="c"># if file contains header indicating proper JV file</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="s">&#39;Bias (V)&#39;</span> <span class="ow">in</span> <span class="n">pixel_file</span><span class="o">.</span><span class="n">next</span><span class="p">():</span>
+                        <span class="n">pixel_files_paths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
+                    <span class="k">pass</span>
+    <span class="k">return</span> <span class="n">pixel_files_paths</span>
+
+
+<span class="k">def</span> <span class="nf">extract_data</span><span class="p">(</span><span class="n">pixel_files_paths</span><span class="p">,</span> <span class="n">minimum_voc</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span></div>
+<div class="viewcode-block" id="extract_data"><a class="viewcode-back" href="../io_handling.html#io_handling.extract_data">[docs]</a><span class="sd">    Processes each JV pixel file in pixel_files_paths and creates a new</span>
+<span class="sd">    jvtool.ss_device.Pixel object for each file. JV pixel files with a Voc</span>
+<span class="sd">    less than minimum_voc will be ignored.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    pixel_files_paths : str</span>
+<span class="sd">        list of valid JV data pixel files</span>
+<span class="sd">    minimum_voc : float</span>
+<span class="sd">        minimum_voc allowed for a pixel to be considered</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    ----------</span>
+<span class="sd">    list</span>
+<span class="sd">        list of Pixel objects corresponding to each JV pixel file</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">pixel_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">file_path</span> <span class="ow">in</span> <span class="n">pixel_files_paths</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">pixel_file</span><span class="p">:</span>
+            <span class="n">directory</span><span class="p">,</span> <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">pixel_file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">filename</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="c"># noinspection PyTypeChecker</span>
+            <span class="n">bias</span><span class="p">,</span> <span class="n">current_density</span><span class="p">,</span> <span class="n">current</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span>
+                <span class="n">pixel_file</span><span class="p">,</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="s">&#39;f8,f8,f8&#39;</span><span class="p">,</span>
+                <span class="n">skiprows</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">usecols</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+                <span class="n">delimiter</span><span class="o">=</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="p">,</span>
+                <span class="n">unpack</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+            <span class="c"># create JVCurve object from data</span>
+            <span class="n">jv_curve</span> <span class="o">=</span> <span class="n">jv_calculations</span><span class="o">.</span><span class="n">JVCurve</span><span class="p">(</span>
+                <span class="n">bias</span><span class="p">,</span>
+                <span class="n">current</span><span class="p">,</span>
+                <span class="n">current_density</span><span class="p">,</span>
+                <span class="n">minimum_voc</span>
+            <span class="p">)</span>
+
+            <span class="c"># create Pixel object from data</span>
+            <span class="n">a_pixel</span> <span class="o">=</span> <span class="n">ss_device</span><span class="o">.</span><span class="n">Pixel</span><span class="p">(</span>
+                <span class="n">name</span><span class="p">,</span>
+                <span class="n">directory</span><span class="p">,</span>
+                <span class="n">jv_curve</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">pixel_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">a_pixel</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">pixel_list</span>
+
+
+<span class="k">def</span> <span class="nf">prompt_overwrite</span><span class="p">(</span><span class="n">file_type</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span></div>
+<div class="viewcode-block" id="prompt_overwrite"><a class="viewcode-back" href="../io_handling.html#io_handling.prompt_overwrite">[docs]</a><span class="sd">    Prompts user if they want to overwrite files of type file_type</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    file_type : str</span>
+<span class="sd">        the file_type that the user is prompted for overwrite</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    ----------</span>
+<span class="sd">    bool</span>
+<span class="sd">        True if overwrite of file_type is desired, False otherwise</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">print</span> <span class="p">(</span><span class="s">&#39;Do you want to overwrite existing </span><span class="si">%s</span><span class="s"> files if they exist?&#39;</span>
+           <span class="o">%</span> <span class="n">file_type</span><span class="p">)</span>
+    <span class="n">overwrite</span> <span class="o">=</span> <span class="nb">raw_input</span><span class="p">(</span><span class="s">&#39;(y/n) &gt; &#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">overwrite</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;y&#39;</span><span class="p">)</span>
+</pre></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, Colin Summers.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
