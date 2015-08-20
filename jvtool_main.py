@@ -38,24 +38,35 @@ def main():
         plot_overwrite = io_handling.prompt_overwrite('image files')
         # get desired bounds if any for saving JV plots
         plot_bounds = plotting_tools.get_bounds()
+
+    # get recursive folder scan preference
+    print 'Do you want to recursively scan all subfolders in the specified directory?'
+    recursive_scan = raw_input('(y/n) > ').lower().startswith('y')
     
     # continue to prompt user for directory paths until undesired
     continue_processing = True
     while continue_processing:
-        # get directory path
-        directory_path = io_handling.get_dir_path()
+        # get root directory path
+        dir_list = list()
+        dir_list.append(io_handling.get_dir_path())
         print '\n'
-        
+
+        # generate recursive list of subfolders
+        if recursive_scan:
+            temp = list()
+            for root, subdir, file in os.walk(dir_list[0]):
+                temp.append(root)
+            dir_list = temp
         # 
         if plot_data:
-            _process_data(directory_path=directory_path,
+            _process_data(dir_list=dir_list,
                          minimum_voc=minimum_voc,
                          charfile_overwrite=charfile_overwrite,
                          plot_data=plot_data,
                          plot_overwrite=plot_overwrite,
                          plot_bounds=plot_bounds)
         else:
-            _process_data(directory_path=directory_path,
+            _process_data(dir_list=dir_list,
                          minimum_voc=minimum_voc,
                          charfile_overwrite=charfile_overwrite)
 
@@ -67,7 +78,7 @@ def main():
 
     print 'Have a great day!'
     
-def _process_data(directory_path,
+def _process_data(dir_list,
                  minimum_voc,
                  plot_data=False,
                  charfile_overwrite=False,
@@ -90,17 +101,19 @@ def _process_data(directory_path,
     plot_bounds : tuple
         tuple of (min_x, max_x, min_y, max_y) bounds for plotting
     """
-    pixel_file_paths = io_handling.get_pixel_file_paths(directory_path)
-    pixel_list = io_handling.extract_data(pixel_file_paths, minimum_voc)
-    device = ss_device.Device(pixel_list, directory_path)
-    
-    # save device parameters
-    save_device_parameters(device, charfile_overwrite)
-    print '\n'
-    
-    if plot_data:
-        save_plot(device, plot_overwrite, plot_bounds)
+
+    for directory_path in dir_list:
+        pixel_file_paths = io_handling.get_pixel_file_paths(directory_path)
+        pixel_list = io_handling.extract_data(pixel_file_paths, minimum_voc)
+        device = ss_device.Device(pixel_list, directory_path)
+
+        # save device parameters
+        save_device_parameters(device, charfile_overwrite)
         print '\n'
+
+        if plot_data:
+            save_plot(device, plot_overwrite, plot_bounds)
+            print '\n'
     
 
 
