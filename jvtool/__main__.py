@@ -6,10 +6,10 @@ __maintainer__ = 'Colin Summers'
 __email__ = 'colinxs@uw.edu'
 __status__ = 'Development'
 
-import io_handling
-import ss_device
+import src.io_handling
+import src.ss_device
 import os
-import plotting_tools
+import src.plotting_tools
 
 
 def main():
@@ -18,7 +18,7 @@ def main():
     print ('Data file will be named as pixel_filename.txt where'
            ' pixel_filename is the filename of the corresponding pixel\'s'
            ' JV data .txt file.')
-    charfile_overwrite = io_handling.prompt_overwrite('device data')
+    charfile_overwrite = src.io_handling.prompt_overwrite('device data')
     
     # get minimum tolerable Voc
     print ('What is the minimum allowed Voc values? This is'
@@ -35,9 +35,9 @@ def main():
             'Image files will be named as pixel_filename.png where'
             ' pixel_filename is the filename of the corresponding pixel\'s'
             ' JV data .txt file.')
-        plot_overwrite = io_handling.prompt_overwrite('image files')
+        plot_overwrite = src.io_handling.prompt_overwrite('image files')
         # get desired bounds if any for saving JV plots
-        plot_bounds = plotting_tools.get_bounds()
+        plot_bounds = src.plotting_tools.get_bounds()
 
     # get recursive folder scan preference
     print 'Do you want to recursively scan all subfolders in the specified directory?'
@@ -48,10 +48,10 @@ def main():
     while continue_processing:
         # get root directory path
         dir_list = list()
-        dir_list.append(io_handling.get_dir_path())
+        dir_list.append(src.io_handling.get_dir_path())
         print '\n'
 
-        # generate recursive list of subfolders
+        # generate recursive list of subfolders, if desired
         if recursive_scan:
             temp = list()
             for root, subdir, file in os.walk(dir_list[0]):
@@ -103,9 +103,9 @@ def _process_data(dir_list,
     """
 
     for directory_path in dir_list:
-        pixel_file_paths = io_handling.get_pixel_file_paths(directory_path)
-        pixel_list = io_handling.extract_data(pixel_file_paths, minimum_voc)
-        device = ss_device.Device(pixel_list, directory_path)
+        pixel_file_paths = src.io_handling.get_pixel_file_paths(directory_path)
+        pixel_list = src.io_handling.extract_data(pixel_file_paths, minimum_voc)
+        device = src.ss_device.Device(pixel_list, directory_path)
 
         # save device parameters
         save_device_parameters(device, charfile_overwrite)
@@ -129,7 +129,7 @@ def save_device_parameters(device, overwrite):
     """
     filename = device.device_name + '.txt'
     file_path = os.path.join(device.directory, filename)
-    with io_handling.HandleFileSave(file_path, overwrite) as new_file:
+    with src.io_handling.HandleFileSave(file_path, overwrite) as new_file:
         _save_device_parameters_helper(device,
                                        new_file)
 
@@ -154,8 +154,8 @@ def _save_device_parameters_helper(device, new_file):
         'Jsc (mA/cm^2)',
         'Fill Factor',
         'PCE',
-        'Rs',
-        'Rsh'))
+        'Rs (ohm/cm^2)',
+        'Rsh (ohm/cm^2)'))
     # individual pixel parameters
     for pixel in device.pixel_list:
         if pixel.jv_curve.Voc is not None:
@@ -228,8 +228,8 @@ def save_plot(device, overwrite, bounds):
     for pixel in device.pixel_list:
         image_name = '{}.{}'.format(pixel.name, 'png')
         image_path = os.path.join(device.directory, image_name)
-        with io_handling.HandleFileSave(image_path, overwrite) as new_file:
-            plotting_tools.plot(new_file,
+        with src.io_handling.HandleFileSave(image_path, overwrite) as new_file:
+            src.plotting_tools.plot(new_file,
                                 pixel.jv_curve.bias,
                                 pixel.jv_curve.current_density,
                                 bounds)
