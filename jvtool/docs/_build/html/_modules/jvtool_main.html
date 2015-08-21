@@ -1,0 +1,322 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>jvtool_main &mdash; JVTool  documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="JVTool  documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for jvtool_main</h1><div class="highlight"><pre>
+<span class="n">__author__</span> <span class="o">=</span> <span class="s">&#39;Colin Summers&#39;</span>
+<span class="n">__copyright__</span> <span class="o">=</span> <span class="s">&#39;Copyright 2015, Ginger Lab&#39;</span>
+<span class="n">__maintainer__</span> <span class="o">=</span> <span class="s">&#39;Colin Summers&#39;</span>
+<span class="n">__email__</span> <span class="o">=</span> <span class="s">&#39;colinxs@uw.edu&#39;</span>
+<span class="n">__status__</span> <span class="o">=</span> <span class="s">&#39;Development&#39;</span>
+
+<span class="kn">import</span> <span class="nn">io_handling</span>
+<span class="kn">import</span> <span class="nn">ss_device</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">plotting_tools</span>
+
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../jvtool_main.html#jvtool_main.main">[docs]</a>    <span class="c"># get charfile overwrite preference</span>
+    <span class="k">print</span> <span class="p">(</span><span class="s">&#39;Data file will be named as pixel_filename.txt where&#39;</span>
+           <span class="s">&#39; pixel_filename is the filename of the corresponding pixel</span><span class="se">\&#39;</span><span class="s">s&#39;</span>
+           <span class="s">&#39; JV data .txt file.&#39;</span><span class="p">)</span>
+    <span class="n">charfile_overwrite</span> <span class="o">=</span> <span class="n">io_handling</span><span class="o">.</span><span class="n">prompt_overwrite</span><span class="p">(</span><span class="s">&#39;device data&#39;</span><span class="p">)</span>
+    
+    <span class="c"># get minimum tolerable Voc</span>
+    <span class="k">print</span> <span class="p">(</span><span class="s">&#39;What is the minimum allowed Voc values? This is&#39;</span>
+           <span class="s">&#39; used to eliminate outliers/dead pixels from your data.&#39;</span><span class="p">)</span>
+    <span class="n">minimum_voc</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">raw_input</span><span class="p">(</span><span class="s">&#39;min? &gt;&#39;</span><span class="p">))</span>
+    
+    <span class="c"># save JV plots, if desired</span>
+    <span class="k">print</span> <span class="s">&#39;Do you want images?&#39;</span>
+    <span class="n">plot_data</span> <span class="o">=</span> <span class="nb">raw_input</span><span class="p">(</span><span class="s">&#39;(y/n) &gt; &#39;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;y&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">plot_data</span><span class="p">:</span>
+        <span class="c"># get plot overwrite preference</span>
+        <span class="k">print</span> <span class="p">(</span>
+            <span class="s">&#39;Image files will be named as pixel_filename.png where&#39;</span>
+            <span class="s">&#39; pixel_filename is the filename of the corresponding pixel</span><span class="se">\&#39;</span><span class="s">s&#39;</span>
+            <span class="s">&#39; JV data .txt file.&#39;</span><span class="p">)</span>
+        <span class="n">plot_overwrite</span> <span class="o">=</span> <span class="n">io_handling</span><span class="o">.</span><span class="n">prompt_overwrite</span><span class="p">(</span><span class="s">&#39;image files&#39;</span><span class="p">)</span>
+        <span class="c"># get desired bounds if any for saving JV plots</span>
+        <span class="n">plot_bounds</span> <span class="o">=</span> <span class="n">plotting_tools</span><span class="o">.</span><span class="n">get_bounds</span><span class="p">()</span>
+
+    <span class="c"># get recursive folder scan preference</span>
+    <span class="k">print</span> <span class="s">&#39;Do you want to recursively scan all subfolders in the specified directory?&#39;</span>
+    <span class="n">recursive_scan</span> <span class="o">=</span> <span class="nb">raw_input</span><span class="p">(</span><span class="s">&#39;(y/n) &gt; &#39;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;y&#39;</span><span class="p">)</span>
+    
+    <span class="c"># continue to prompt user for directory paths until undesired</span>
+    <span class="n">continue_processing</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="k">while</span> <span class="n">continue_processing</span><span class="p">:</span>
+        <span class="c"># get root directory path</span>
+        <span class="n">dir_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">dir_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">io_handling</span><span class="o">.</span><span class="n">get_dir_path</span><span class="p">())</span>
+        <span class="k">print</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span>
+
+        <span class="c"># generate recursive list of subfolders</span>
+        <span class="k">if</span> <span class="n">recursive_scan</span><span class="p">:</span>
+            <span class="n">temp</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">root</span><span class="p">,</span> <span class="n">subdir</span><span class="p">,</span> <span class="nb">file</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">dir_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+                <span class="n">temp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">root</span><span class="p">)</span>
+            <span class="n">dir_list</span> <span class="o">=</span> <span class="n">temp</span>
+        <span class="c"># </span>
+        <span class="k">if</span> <span class="n">plot_data</span><span class="p">:</span>
+            <span class="n">_process_data</span><span class="p">(</span><span class="n">dir_list</span><span class="o">=</span><span class="n">dir_list</span><span class="p">,</span>
+                         <span class="n">minimum_voc</span><span class="o">=</span><span class="n">minimum_voc</span><span class="p">,</span>
+                         <span class="n">charfile_overwrite</span><span class="o">=</span><span class="n">charfile_overwrite</span><span class="p">,</span>
+                         <span class="n">plot_data</span><span class="o">=</span><span class="n">plot_data</span><span class="p">,</span>
+                         <span class="n">plot_overwrite</span><span class="o">=</span><span class="n">plot_overwrite</span><span class="p">,</span>
+                         <span class="n">plot_bounds</span><span class="o">=</span><span class="n">plot_bounds</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">_process_data</span><span class="p">(</span><span class="n">dir_list</span><span class="o">=</span><span class="n">dir_list</span><span class="p">,</span>
+                         <span class="n">minimum_voc</span><span class="o">=</span><span class="n">minimum_voc</span><span class="p">,</span>
+                         <span class="n">charfile_overwrite</span><span class="o">=</span><span class="n">charfile_overwrite</span><span class="p">)</span>
+
+        <span class="k">print</span> <span class="s">&#39;Do you have another device?&#39;</span>
+        <span class="n">continue_answer</span> <span class="o">=</span> <span class="nb">raw_input</span><span class="p">(</span><span class="s">&#39;(y/n) &gt; &#39;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;y&#39;</span><span class="p">)</span>
+        <span class="k">print</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">continue_answer</span><span class="p">:</span>
+            <span class="n">continue_processing</span> <span class="o">=</span> <span class="bp">False</span>
+
+    <span class="k">print</span> <span class="s">&#39;Have a great day!&#39;</span>
+    
+<span class="k">def</span> <span class="nf">_process_data</span><span class="p">(</span><span class="n">dir_list</span><span class="p">,</span>
+                 <span class="n">minimum_voc</span><span class="p">,</span></div>
+                 <span class="n">plot_data</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">charfile_overwrite</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">plot_overwrite</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">plot_bounds</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Manages various file process tasks</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    directory_path : str</span>
+<span class="sd">        path to folder to be processed</span>
+<span class="sd">    minimum_voc : int</span>
+<span class="sd">        minimum allowable Voc, used to a simple way to eliminate dead pixels</span>
+<span class="sd">    plot_data : bool</span>
+<span class="sd">        true if plot of data desired, false otherwise</span>
+<span class="sd">    charfile_overwrite : bool</span>
+<span class="sd">        true if overwrite of device charfile is desired, false otherwise</span>
+<span class="sd">    plot_overwrite : bool</span>
+<span class="sd">        true if overwrite of device charfile is desired, false otherwise</span>
+<span class="sd">    plot_bounds : tuple</span>
+<span class="sd">        tuple of (min_x, max_x, min_y, max_y) bounds for plotting</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">for</span> <span class="n">directory_path</span> <span class="ow">in</span> <span class="n">dir_list</span><span class="p">:</span>
+        <span class="n">pixel_file_paths</span> <span class="o">=</span> <span class="n">io_handling</span><span class="o">.</span><span class="n">get_pixel_file_paths</span><span class="p">(</span><span class="n">directory_path</span><span class="p">)</span>
+        <span class="n">pixel_list</span> <span class="o">=</span> <span class="n">io_handling</span><span class="o">.</span><span class="n">extract_data</span><span class="p">(</span><span class="n">pixel_file_paths</span><span class="p">,</span> <span class="n">minimum_voc</span><span class="p">)</span>
+        <span class="n">device</span> <span class="o">=</span> <span class="n">ss_device</span><span class="o">.</span><span class="n">Device</span><span class="p">(</span><span class="n">pixel_list</span><span class="p">,</span> <span class="n">directory_path</span><span class="p">)</span>
+
+        <span class="c"># save device parameters</span>
+        <span class="n">save_device_parameters</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">charfile_overwrite</span><span class="p">)</span>
+        <span class="k">print</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span>
+
+        <span class="k">if</span> <span class="n">plot_data</span><span class="p">:</span>
+            <span class="n">save_plot</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">plot_overwrite</span><span class="p">,</span> <span class="n">plot_bounds</span><span class="p">)</span>
+            <span class="k">print</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span>
+    
+
+
+<span class="k">def</span> <span class="nf">save_device_parameters</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">overwrite</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Saves this device&#39;s parameters in a file named device_name.txt</span>
+<div class="viewcode-block" id="save_device_parameters"><a class="viewcode-back" href="../jvtool_main.html#jvtool_main.save_device_parameters">[docs]</a>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    device : Device object</span>
+<span class="sd">        the current device being saved</span>
+<span class="sd">    overwrite : bool</span>
+<span class="sd">        true if overwrite of device charfile desired, false otherwise</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="n">device</span><span class="o">.</span><span class="n">device_name</span> <span class="o">+</span> <span class="s">&#39;.txt&#39;</span>
+    <span class="n">file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">io_handling</span><span class="o">.</span><span class="n">HandleFileSave</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">overwrite</span><span class="p">)</span> <span class="k">as</span> <span class="n">new_file</span><span class="p">:</span>
+        <span class="n">_save_device_parameters_helper</span><span class="p">(</span><span class="n">device</span><span class="p">,</span>
+                                       <span class="n">new_file</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_save_device_parameters_helper</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">new_file</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span></div>
+<span class="sd">    Formats and writes device parameters to new_file</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    device : Device object</span>
+<span class="sd">        the current device being saved</span>
+<span class="sd">    new_file : File object</span>
+<span class="sd">        file handle of parameter save file</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c"># file header</span>
+    <span class="n">new_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;{}</span><span class="se">\t</span><span class="s">{}</span><span class="se">\t</span><span class="s">{}</span><span class="se">\t</span><span class="s">{}</span><span class="se">\t</span><span class="s">{}</span><span class="se">\t</span><span class="s">{}</span><span class="se">\t</span><span class="s">{}</span><span class="se">\t</span><span class="s">{}</span><span class="se">\t</span><span class="s">{}</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="s">&#39;Pixel Name&#39;</span><span class="p">,</span>
+        <span class="s">&#39;Voc (V)&#39;</span><span class="p">,</span>
+        <span class="s">&#39;Isc (A)&#39;</span><span class="p">,</span>
+        <span class="s">&#39;Area (cm^2)&#39;</span><span class="p">,</span>
+        <span class="s">&#39;Jsc (mA/cm^2)&#39;</span><span class="p">,</span>
+        <span class="s">&#39;Fill Factor&#39;</span><span class="p">,</span>
+        <span class="s">&#39;PCE&#39;</span><span class="p">,</span>
+        <span class="s">&#39;Rs&#39;</span><span class="p">,</span>
+        <span class="s">&#39;Rsh&#39;</span><span class="p">))</span>
+    <span class="c"># individual pixel parameters</span>
+    <span class="k">for</span> <span class="n">pixel</span> <span class="ow">in</span> <span class="n">device</span><span class="o">.</span><span class="n">pixel_list</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">pixel</span><span class="o">.</span><span class="n">jv_curve</span><span class="o">.</span><span class="n">Voc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="c"># individual pixel parameters</span>
+            <span class="n">new_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;{}</span><span class="se">\t</span><span class="s">{}</span><span class="se">\t</span><span class="s">{}</span><span class="se">\t</span><span class="s">{}</span><span class="se">\t</span><span class="s">{}</span><span class="se">\t</span><span class="s">{}</span><span class="se">\t</span><span class="s">{}</span><span class="se">\t</span><span class="s">{}</span><span class="se">\t</span><span class="s">{}</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">pixel</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                <span class="n">pixel</span><span class="o">.</span><span class="n">jv_curve</span><span class="o">.</span><span class="n">Voc</span><span class="p">,</span>
+                <span class="n">pixel</span><span class="o">.</span><span class="n">jv_curve</span><span class="o">.</span><span class="n">Isc</span><span class="p">,</span>
+                <span class="n">pixel</span><span class="o">.</span><span class="n">jv_curve</span><span class="o">.</span><span class="n">area</span><span class="p">,</span>
+                <span class="n">pixel</span><span class="o">.</span><span class="n">jv_curve</span><span class="o">.</span><span class="n">Jsc</span><span class="p">,</span>
+                <span class="n">pixel</span><span class="o">.</span><span class="n">jv_curve</span><span class="o">.</span><span class="n">FF</span><span class="p">,</span>
+                <span class="n">pixel</span><span class="o">.</span><span class="n">jv_curve</span><span class="o">.</span><span class="n">PCE</span><span class="p">,</span>
+                <span class="n">pixel</span><span class="o">.</span><span class="n">jv_curve</span><span class="o">.</span><span class="n">Rs</span><span class="p">,</span>
+                <span class="n">pixel</span><span class="o">.</span><span class="n">jv_curve</span><span class="o">.</span><span class="n">Rsh</span><span class="p">))</span>
+    <span class="c"># device parameter mean</span>
+    <span class="n">new_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+        <span class="s">&#39;Averages:</span><span class="se">\t</span><span class="s">{}</span><span class="se">\t</span><span class="s">{}</span><span class="se">\t\t</span><span class="s">{}</span><span class="se">\t</span><span class="s">{}</span><span class="se">\t</span><span class="s">{}</span><span class="se">\t</span><span class="s">{}</span><span class="se">\t</span><span class="s">{}</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">device</span><span class="o">.</span><span class="n">mean_Voc</span><span class="p">,</span>
+            <span class="n">device</span><span class="o">.</span><span class="n">mean_Isc</span><span class="p">,</span>
+            <span class="n">device</span><span class="o">.</span><span class="n">mean_Jsc</span><span class="p">,</span>
+            <span class="n">device</span><span class="o">.</span><span class="n">mean_FF</span><span class="p">,</span>
+            <span class="n">device</span><span class="o">.</span><span class="n">mean_PCE</span><span class="p">,</span>
+            <span class="n">device</span><span class="o">.</span><span class="n">mean_Rs</span><span class="p">,</span>
+            <span class="n">device</span><span class="o">.</span><span class="n">mean_Rsh</span><span class="p">))</span>
+    <span class="c"># device parameter standard deviation</span>
+    <span class="n">new_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+        <span class="s">&#39;Std. Dev:</span><span class="se">\t</span><span class="s">{}</span><span class="se">\t</span><span class="s">{}</span><span class="se">\t\t</span><span class="s">{}</span><span class="se">\t</span><span class="s">{}</span><span class="se">\t</span><span class="s">{}</span><span class="se">\t</span><span class="s">{}</span><span class="se">\t</span><span class="s">{}</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">device</span><span class="o">.</span><span class="n">std_Voc</span><span class="p">,</span>
+            <span class="n">device</span><span class="o">.</span><span class="n">std_Isc</span><span class="p">,</span>
+            <span class="n">device</span><span class="o">.</span><span class="n">std_Jsc</span><span class="p">,</span>
+            <span class="n">device</span><span class="o">.</span><span class="n">std_FF</span><span class="p">,</span>
+            <span class="n">device</span><span class="o">.</span><span class="n">std_PCE</span><span class="p">,</span>
+            <span class="n">device</span><span class="o">.</span><span class="n">std_Rs</span><span class="p">,</span>
+            <span class="n">device</span><span class="o">.</span><span class="n">std_Rsh</span><span class="p">))</span>
+    <span class="c"># device parameter median</span>
+    <span class="n">new_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+        <span class="s">&#39;Median:</span><span class="se">\t</span><span class="s">{}</span><span class="se">\t</span><span class="s">{}</span><span class="se">\t\t</span><span class="s">{}</span><span class="se">\t</span><span class="s">{}</span><span class="se">\t</span><span class="s">{}</span><span class="se">\t</span><span class="s">{}</span><span class="se">\t</span><span class="s">{}</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">device</span><span class="o">.</span><span class="n">median_Voc</span><span class="p">,</span>
+            <span class="n">device</span><span class="o">.</span><span class="n">median_Isc</span><span class="p">,</span>
+            <span class="n">device</span><span class="o">.</span><span class="n">median_Jsc</span><span class="p">,</span>
+            <span class="n">device</span><span class="o">.</span><span class="n">median_FF</span><span class="p">,</span>
+            <span class="n">device</span><span class="o">.</span><span class="n">median_PCE</span><span class="p">,</span>
+            <span class="n">device</span><span class="o">.</span><span class="n">median_Rs</span><span class="p">,</span>
+            <span class="n">device</span><span class="o">.</span><span class="n">median_Rsh</span><span class="p">))</span>
+    <span class="c"># device parameter Q-Test Outliers</span>
+    <span class="n">new_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+        <span class="s">&#39;Q-Test Outliers:</span><span class="se">\t</span><span class="s">{}</span><span class="se">\t</span><span class="s">{}</span><span class="se">\t\t</span><span class="s">{}</span><span class="se">\t</span><span class="s">{}</span><span class="se">\t</span><span class="s">{}</span><span class="se">\t</span><span class="s">{}</span><span class="se">\t</span><span class="s">{}</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">device</span><span class="o">.</span><span class="n">outliers_Voc</span><span class="p">,</span>
+            <span class="n">device</span><span class="o">.</span><span class="n">outliers_Isc</span><span class="p">,</span>
+            <span class="n">device</span><span class="o">.</span><span class="n">outliers_Jsc</span><span class="p">,</span>
+            <span class="n">device</span><span class="o">.</span><span class="n">outliers_FF</span><span class="p">,</span>
+            <span class="n">device</span><span class="o">.</span><span class="n">outliers_PCE</span><span class="p">,</span>
+            <span class="n">device</span><span class="o">.</span><span class="n">outliers_Rs</span><span class="p">,</span>
+            <span class="n">device</span><span class="o">.</span><span class="n">outliers_Rsh</span><span class="p">))</span>
+    <span class="k">print</span> <span class="s">&#39;</span><span class="se">\&#39;</span><span class="s">{}</span><span class="se">\&#39;</span><span class="s"> saved successfully!&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">new_file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">save_plot</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">overwrite</span><span class="p">,</span> <span class="n">bounds</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Saves JV plots for each Pixel in this Device</span>
+<div class="viewcode-block" id="save_plot"><a class="viewcode-back" href="../jvtool_main.html#jvtool_main.save_plot">[docs]</a>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    device : Device object</span>
+<span class="sd">        the current device being considered</span>
+<span class="sd">    bounds : tuple</span>
+<span class="sd">        tuple of (min_x, max_x, min_y, max_y) bounds for plotting</span>
+<span class="sd">    overwrite : bool</span>
+<span class="sd">        true if overwrite of device charfile is desired, false otherwise</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">pixel</span> <span class="ow">in</span> <span class="n">device</span><span class="o">.</span><span class="n">pixel_list</span><span class="p">:</span>
+        <span class="n">image_name</span> <span class="o">=</span> <span class="s">&#39;{}.{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">pixel</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s">&#39;png&#39;</span><span class="p">)</span>
+        <span class="n">image_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span> <span class="n">image_name</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">io_handling</span><span class="o">.</span><span class="n">HandleFileSave</span><span class="p">(</span><span class="n">image_path</span><span class="p">,</span> <span class="n">overwrite</span><span class="p">)</span> <span class="k">as</span> <span class="n">new_file</span><span class="p">:</span>
+            <span class="n">plotting_tools</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">new_file</span><span class="p">,</span>
+                                <span class="n">pixel</span><span class="o">.</span><span class="n">jv_curve</span><span class="o">.</span><span class="n">bias</span><span class="p">,</span>
+                                <span class="n">pixel</span><span class="o">.</span><span class="n">jv_curve</span><span class="o">.</span><span class="n">current_density</span><span class="p">,</span>
+                                <span class="n">bounds</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, Colin Summers.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

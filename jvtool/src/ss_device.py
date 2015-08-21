@@ -6,9 +6,8 @@ __maintainer__ = 'Colin Summers'
 __email__ = 'colinxs@uw.edu'
 __status__ = 'Development'
 
-import statistics
+import src.statistics
 import os
-import matplotlib
 from collections import OrderedDict
 import numpy as np
 
@@ -104,7 +103,7 @@ class Device(object):
 
     def calc_stat_FF(self):
         """
-        Calculates Fill Factor statistics (mean, median, Q-Test, Std. Dev)
+        Calculates Fill Factor src.statistics (mean, median, Q-Test, Std. Dev)
         
         Returns
         ----------
@@ -120,14 +119,14 @@ class Device(object):
         if len(list_of_FF) > 0:
             return (np.mean(list_of_FF),
                     np.std(list_of_FF),
-                    statistics.q_test(list_of_FF),
+                    src.statistics.q_test(list_of_FF),
                     np.median(list_of_FF))
         else:
             return None, None, None, None
 
     def calc_stat_PCE(self):
         """
-        Calculates PCE statistics (mean, median, Q-Test, Std. Dev)
+        Calculates PCE src.statistics (mean, median, Q-Test, Std. Dev)
         
         Returns
         ----------
@@ -143,14 +142,14 @@ class Device(object):
         if len(list_of_PCE) > 0:
             return (np.mean(list_of_PCE),
                     np.std(list_of_PCE),
-                    statistics.q_test(list_of_PCE),
+                    src.statistics.q_test(list_of_PCE),
                     np.median(list_of_PCE))
         else:
             return None, None, None, None
 
     def calc_stat_Jsc(self):
         """
-        Calculates Jsc statistics (mean, median, Q-Test, Std. Dev)
+        Calculates Jsc src.statistics (mean, median, Q-Test, Std. Dev)
         
         Returns
         ----------
@@ -166,14 +165,14 @@ class Device(object):
         if len(list_of_Jsc) > 0:
             return (np.mean(list_of_Jsc),
                     np.std(list_of_Jsc),
-                    statistics.q_test(list_of_Jsc),
+                    src.statistics.q_test(list_of_Jsc),
                     np.median(list_of_Jsc))
         else:
             return None, None, None, None
 
     def calc_stat_Voc(self):
         """
-        Calculates Voc statistics (mean, median, Q-Test, Std. Dev)
+        Calculates Voc src.statistics (mean, median, Q-Test, Std. Dev)
         
         Returns
         ----------
@@ -189,7 +188,7 @@ class Device(object):
         if len(list_of_Voc) > 0:
             return (np.mean(list_of_Voc),
                     np.std(list_of_Voc),
-                    statistics.q_test(list_of_Voc),
+                    src.statistics.q_test(list_of_Voc),
                     np.median(list_of_Voc))
         else:
             return None, None, None, None
@@ -197,7 +196,7 @@ class Device(object):
 
     def calc_stat_Isc(self):
         """
-        Calculates Isc statistics (mean, median, Q-Test, Std. Dev)
+        Calculates Isc src.statistics (mean, median, Q-Test, Std. Dev)
         
         Returns
         ----------
@@ -213,14 +212,14 @@ class Device(object):
         if len(list_of_Isc) > 0:
             return (np.mean(list_of_Isc),
                     np.std(list_of_Isc),
-                    statistics.q_test(list_of_Isc),
+                    src.statistics.q_test(list_of_Isc),
                     np.median(list_of_Isc))
         else:
             return None, None, None, None
 
     def calc_stat_Rs(self):
         """
-        Calculates series resistance statistics (mean, median, Q-Test, Std. Dev)
+        Calculates series resistance src.statistics (mean, median, Q-Test, Std. Dev)
 
         Returns
         ----------
@@ -236,14 +235,14 @@ class Device(object):
         if len(list_of_Rs) > 0:
             return (np.mean(list_of_Rs),
                     np.std(list_of_Rs),
-                    statistics.q_test(list_of_Rs),
+                    src.statistics.q_test(list_of_Rs),
                     np.median(list_of_Rs))
         else:
             return None, None, None, None
 
     def calc_stat_Rsh(self):
         """
-        Calculates shunt resistance statistics (mean, median, Q-Test, Std. Dev)
+        Calculates shunt resistance src.statistics (mean, median, Q-Test, Std. Dev)
 
         Returns
         ----------
@@ -259,7 +258,7 @@ class Device(object):
         if len(list_of_Rsh) > 0:
             return (np.mean(list_of_Rsh),
                     np.std(list_of_Rsh),
-                    statistics.q_test(list_of_Rsh),
+                    src.statistics.q_test(list_of_Rsh),
                     np.median(list_of_Rsh))
         else:
             return None, None, None, None

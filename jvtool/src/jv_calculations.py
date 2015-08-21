@@ -1,6 +1,6 @@
 
 
-import statistics
+import src.statistics
 import numpy as np
 from scipy.interpolate import UnivariateSpline
 
@@ -104,12 +104,12 @@ class JVCurve(object):
         ----------
             None if no Voc exists meaning that this pixel is invalid
         """
-        zero_crossings = statistics.find_zero_crossings(self.current_density)
+        zero_crossings = src.statistics.find_zero_crossings(self.current_density)
         # if a zero crossing in JV curve exists
         if len(zero_crossings) > 0:
             # fit univariate spline with no smoothing to region surrounding Voc
             # and return largest root
-            current_density_curve_spline = statistics.curve_fit(self.bias,
+            current_density_curve_spline = src.statistics.curve_fit(self.bias,
                                                       self.current_density,
                                                       x_point=zero_crossings[-1],
                                                       range_percent=0.1,
@@ -168,7 +168,15 @@ class JVCurve(object):
 
     def calc_FF(self):
         """
-        Calculate and return Fill Factor of this pixel.
+        Calculate and return Fill Factor of this pixel by finding the maximum on a power vs bias plot where
+        d(IV)/d(V) = 0 (1).
+
+        References
+        ----------
+
+        [1] Detailed Balance Limit of Efficiency of p-n Junction Solar Cells
+            Shockley, William and Queisser, Hans J., Journal of Applied Physics, 32, 510-519 (1961),
+            DOI:http://dx.doi.org/10.1063/1.1736034
         
         Return
         ----------
@@ -176,7 +184,7 @@ class JVCurve(object):
         """
         if self.Voc is not None:
             # zero crossings of power curve, ideally should only be one value
-            zero_crossings_of_power = statistics.find_zero_crossings(
+            zero_crossings_of_power = src.statistics.find_zero_crossings(
                 self.power_curve)
 
             # set lower_limit_range to index corresponding to 0 power
@@ -188,7 +196,7 @@ class JVCurve(object):
                 upper_limit_range = zero_crossings_of_power[-1]
             # fit univariate spline with no smoothing to subregion of power
             # curve where maximum power occurs
-            power_curve_spline = statistics.curve_fit(self.bias,
+            power_curve_spline = src.statistics.curve_fit(self.bias,
                                                       self.power_curve,
                                                       lower_limit_range=lower_limit_range,
                                                       upper_limit_range=upper_limit_range,
@@ -213,8 +221,8 @@ class JVCurve(object):
 
     def calc_Rsh(self):
         if self.area is not None:
-            x_point = len(self.bias) / 2
-            curve_near_Isc = statistics.curve_fit(self.bias, self.current, x_point=x_point, order=4, range_percent=0.3, plot=False)
+            x_point = self.bias.index(0)
+            curve_near_Isc = src.statistics.curve_fit(self.bias, self.current, x_point=x_point, order=4, range_percent=0.3, plot=False)
             curve_near_Isc_derivative = curve_near_Isc.derivative()
             # print curve_near_Isc_derivative(0)
             # x = np.linspace(-2,2,1000)
@@ -228,9 +236,9 @@ class JVCurve(object):
 
     def calc_Rs(self):
         if self.area is not None:
-            zero_crossings = statistics.find_zero_crossings(self.current)
+            zero_crossings = src.statistics.find_zero_crossings(self.current)
             rough_Voc = zero_crossings[-1]
-            curve_near_Voc = statistics.curve_fit(self.bias, self.current, x_point=rough_Voc, range_percent=0.3, plot=False)
+            curve_near_Voc = src.statistics.curve_fit(self.bias, self.current, x_point=rough_Voc, range_percent=0.3, plot=False)
             curve_near_Voc_derivative = curve_near_Voc.derivative()
             # x = np.linspace(-2,2,1000)
             # # plt.interactive(False)

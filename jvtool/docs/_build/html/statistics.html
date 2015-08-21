@@ -1,0 +1,149 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>statistics module &mdash; JVTool  documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="JVTool  documentation" href="index.html" />
+    <link rel="prev" title="ss_device module" href="ss_device.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-statistics">
+<span id="statistics-module"></span><h1>statistics module<a class="headerlink" href="#module-statistics" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="statistics.check_index">
+<code class="descclassname">statistics.</code><code class="descname">check_index</code><span class="sig-paren">(</span><em>index</em>, <em>a_list</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/statistics.html#check_index"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statistics.check_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if index is within the bounds of this pixel&#8217;s data</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>index</strong> (<em>int</em>) &#8211; the index to be checked for validity</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<div>True if index is within the bounds of this pixels domain of
+valid indices, False otherwise</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="statistics.curve_fit">
+<code class="descclassname">statistics.</code><code class="descname">curve_fit</code><span class="sig-paren">(</span><em>x_data</em>, <em>y_data</em>, <em>x_point=None</em>, <em>range_percent=0.1</em>, <em>order=3</em>, <em>lower_limit_range=0</em>, <em>upper_limit_range=None</em>, <em>plot=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/statistics.html#curve_fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statistics.curve_fit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="statistics.find_zero_crossings">
+<code class="descclassname">statistics.</code><code class="descname">find_zero_crossings</code><span class="sig-paren">(</span><em>a_list</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/statistics.html#find_zero_crossings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statistics.find_zero_crossings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the zero crossings in a list of numbers.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>a_list</strong> (<em>list</em>) &#8211; A list of numbers, either as float or int</li>
+<li><strong>Returns</strong> &#8211; </li>
+<li><strong>----------</strong> &#8211; </li>
+<li><strong>list</strong> &#8211; list of indices just after zero crossing</li>
+<li><strong>Examples</strong> &#8211; </li>
+<li><strong>----------</strong> &#8211; <p>$ pixel.bias = [-12, -3, -2, 2]</p>
+<p>$ print pixel._find_zero_crossings(pixel.bias)</p>
+<p>$ [3]</p>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="statistics.q_test">
+<code class="descclassname">statistics.</code><code class="descname">q_test</code><span class="sig-paren">(</span><em>data</em>, <em>left=True</em>, <em>right=True</em>, <em>qtest='q99'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/statistics.html#q_test"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#statistics.q_test" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="ss_device.html" title="previous chapter">ss_device module</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/statistics.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, Colin Summers.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+      |
+      <a href="_sources/statistics.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

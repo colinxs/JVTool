@@ -1,0 +1,349 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ss_device &mdash; JVTool  documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="JVTool  documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for ss_device</h1><div class="highlight"><pre>
+<span class="n">__author__</span> <span class="o">=</span> <span class="s">&#39;Colin Summers&#39;</span>
+<span class="n">__copyright__</span> <span class="o">=</span> <span class="s">&#39;Copyright 2015, Ginger Lab&#39;</span>
+<span class="n">__maintainer__</span> <span class="o">=</span> <span class="s">&#39;Colin Summers&#39;</span>
+<span class="n">__email__</span> <span class="o">=</span> <span class="s">&#39;colinxs@uw.edu&#39;</span>
+<span class="n">__status__</span> <span class="o">=</span> <span class="s">&#39;Development&#39;</span>
+
+<span class="kn">import</span> <span class="nn">statistics</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">matplotlib</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+
+<span class="k">class</span> <span class="nc">Pixel</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Pixel"><a class="viewcode-back" href="../ss_device.html#ss_device.Pixel">[docs]</a><span class="sd">    The Pixel class represents a set of JV data for an individual pixel</span>
+<span class="sd">    of a photovoltaic device.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">        directory : str</span>
+<span class="sd">            the directory containing`this pixel&#39;s JV data</span>
+<span class="sd">        name : str</span>
+<span class="sd">            the filename of this pixel&#39;s JV data</span>
+<span class="sd">        V_to_J : OrderedDict</span>
+<span class="sd">            a dict of Bias--&gt;Current Density whose values are represented</span>
+<span class="sd">            as strings</span>
+<span class="sd">        V_to_I : OrderedDict</span>
+<span class="sd">            a dict of Bias--&gt;Current whose values are represented as</span>
+<span class="sd">            strings</span>
+<span class="sd">        current_density_data : list</span>
+<span class="sd">            float values of current density data</span>
+<span class="sd">        current_data: list</span>
+<span class="sd">            float values of current data</span>
+<span class="sd">        bias : float</span>
+<span class="sd">            values of bias data</span>
+<span class="sd">        min_voc : float</span>
+<span class="sd">            minimum tolerable pixel Voc to be considered valid</span>
+<span class="sd">        Isc : float</span>
+<span class="sd">            this pixel&#39;s short circuit current</span>
+<span class="sd">        Jsc : float</span>
+<span class="sd">            this pixel&#39;s short circuit current density</span>
+<span class="sd">        Voc : float</span>
+<span class="sd">            this pixel&#39;s open circuit voltage</span>
+<span class="sd">        FF : float</span>
+<span class="sd">            this pixel&#39;s fill factor</span>
+<span class="sd">        PCE : float</span>
+<span class="sd">            this pixel&#39;s power conversion efficiency</span>
+<span class="sd">        area : float</span>
+<span class="sd">            this pixel&#39;s area in cm^2</span>
+<span class="sd">        power_curve : float</span>
+<span class="sd">            this pixels power density curve defined as J*V</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">,</span>
+        <span class="n">directory</span><span class="p">,</span>
+        <span class="n">jv_curve</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Initializes an instance of Pixel object&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">directory</span> <span class="o">=</span> <span class="n">directory</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">jv_curve</span> <span class="o">=</span> <span class="n">jv_curve</span>
+
+
+<span class="c"># noinspection PyPep8Naming</span>
+<span class="k">class</span> <span class="nc">Device</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span></div>
+<div class="viewcode-block" id="Device"><a class="viewcode-back" href="../ss_device.html#ss_device.Device">[docs]</a><span class="sd">    The Device class represents a composition of Pixel objects.</span>
+<span class="sd">    </span>
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">        directory : str</span>
+<span class="sd">            directory of this device&#39;s JV data.</span>
+<span class="sd">        name_to_pixel : dict</span>
+<span class="sd">            map of pixel_name --&gt; Pixel object</span>
+<span class="sd">        device_name : str</span>
+<span class="sd">            name of this device corresponding to name of directory</span>
+<span class="sd">            holding this device&#39;s JV data</span>
+<span class="sd">        mean_XX : float</span>
+<span class="sd">            mean of XX (Fill Factor, Isc, Jsc, Voc, or PCE)</span>
+<span class="sd">        std_XX : float</span>
+<span class="sd">            standard deviation of XX (Fill Factor, Isc, Jsc, Voc, or PCE)</span>
+<span class="sd">        outliers_XX : list</span>
+<span class="sd">            Dixon&#39;s Q_Test outliers of of XX (Fill Factor, Isc, Jsc, Voc, or PCE)</span>
+<span class="sd">        median_XX : float</span>
+<span class="sd">            median of XX (Fill Factor, Isc, Jsc, Voc, or PCE)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pixel_list</span><span class="p">,</span> <span class="n">directory</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">directory</span> <span class="o">=</span> <span class="n">directory</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name_to_pixel</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">device_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pixel_list</span> <span class="o">=</span> <span class="n">pixel_list</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mean_FF</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">std_FF</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">outliers_FF</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">median_FF</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_stat_FF</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mean_Isc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">std_Isc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">outliers_Isc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">median_Isc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_stat_Isc</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mean_Jsc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">std_Jsc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">outliers_Jsc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">median_Jsc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_stat_Jsc</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mean_Voc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">std_Voc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">outliers_Voc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">median_Voc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_stat_Voc</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mean_PCE</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">std_PCE</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">outliers_PCE</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">median_PCE</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_stat_PCE</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mean_Rs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">std_Rs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">outliers_Rs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">median_Rs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_stat_Rs</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mean_Rsh</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">std_Rsh</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">outliers_Rsh</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">median_Rsh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_stat_Rsh</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">calc_stat_FF</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Device.calc_stat_FF"><a class="viewcode-back" href="../ss_device.html#ss_device.Device.calc_stat_FF">[docs]</a><span class="sd">        Calculates Fill Factor statistics (mean, median, Q-Test, Std. Dev)</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        ----------</span>
+<span class="sd">        Tuple </span>
+<span class="sd">            (mean, standard deviation, Q_Test outliers, median)</span>
+<span class="sd">            of Fill Factors for this device.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">list_of_FF</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">pixel</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixel_list</span><span class="p">:</span> 
+            <span class="n">FF</span> <span class="o">=</span> <span class="n">pixel</span><span class="o">.</span><span class="n">jv_curve</span><span class="o">.</span><span class="n">FF</span>
+            <span class="k">if</span> <span class="n">FF</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">list_of_FF</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">FF</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">list_of_FF</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">list_of_FF</span><span class="p">),</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">list_of_FF</span><span class="p">),</span>
+                    <span class="n">statistics</span><span class="o">.</span><span class="n">q_test</span><span class="p">(</span><span class="n">list_of_FF</span><span class="p">),</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">list_of_FF</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span>
+
+    <span class="k">def</span> <span class="nf">calc_stat_PCE</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span></div>
+<div class="viewcode-block" id="Device.calc_stat_PCE"><a class="viewcode-back" href="../ss_device.html#ss_device.Device.calc_stat_PCE">[docs]</a><span class="sd">        Calculates PCE statistics (mean, median, Q-Test, Std. Dev)</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        ----------</span>
+<span class="sd">        Tuple </span>
+<span class="sd">            (mean, standard deviation, Q_Test outliers, and median)</span>
+<span class="sd">            of Power Conversion Efficiency for this device.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">list_of_PCE</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">pixel</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixel_list</span><span class="p">:</span>
+            <span class="n">PCE</span> <span class="o">=</span> <span class="n">pixel</span><span class="o">.</span><span class="n">jv_curve</span><span class="o">.</span><span class="n">PCE</span>
+            <span class="k">if</span> <span class="n">PCE</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">list_of_PCE</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">PCE</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">list_of_PCE</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">list_of_PCE</span><span class="p">),</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">list_of_PCE</span><span class="p">),</span>
+                    <span class="n">statistics</span><span class="o">.</span><span class="n">q_test</span><span class="p">(</span><span class="n">list_of_PCE</span><span class="p">),</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">list_of_PCE</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span>
+
+    <span class="k">def</span> <span class="nf">calc_stat_Jsc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span></div>
+<div class="viewcode-block" id="Device.calc_stat_Jsc"><a class="viewcode-back" href="../ss_device.html#ss_device.Device.calc_stat_Jsc">[docs]</a><span class="sd">        Calculates Jsc statistics (mean, median, Q-Test, Std. Dev)</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        ----------</span>
+<span class="sd">        Tuple </span>
+<span class="sd">            (mean, standard deviation, Q_Test outliers, median)</span>
+<span class="sd">            of Jsc for this device.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">list_of_Jsc</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">pixel</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixel_list</span><span class="p">:</span>
+            <span class="n">Jsc</span> <span class="o">=</span> <span class="n">pixel</span><span class="o">.</span><span class="n">jv_curve</span><span class="o">.</span><span class="n">Jsc</span>
+            <span class="k">if</span> <span class="n">Jsc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">list_of_Jsc</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Jsc</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">list_of_Jsc</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">list_of_Jsc</span><span class="p">),</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">list_of_Jsc</span><span class="p">),</span>
+                    <span class="n">statistics</span><span class="o">.</span><span class="n">q_test</span><span class="p">(</span><span class="n">list_of_Jsc</span><span class="p">),</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">list_of_Jsc</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span>
+
+    <span class="k">def</span> <span class="nf">calc_stat_Voc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span></div>
+<div class="viewcode-block" id="Device.calc_stat_Voc"><a class="viewcode-back" href="../ss_device.html#ss_device.Device.calc_stat_Voc">[docs]</a><span class="sd">        Calculates Voc statistics (mean, median, Q-Test, Std. Dev)</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        ----------</span>
+<span class="sd">        Tuple </span>
+<span class="sd">            (mean, standard deviation, Q_Test outliers, median)</span>
+<span class="sd">            of Voc&#39;s for this device.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">list_of_Voc</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">pixel</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixel_list</span><span class="p">:</span>
+            <span class="n">Voc</span> <span class="o">=</span> <span class="n">pixel</span><span class="o">.</span><span class="n">jv_curve</span><span class="o">.</span><span class="n">Voc</span>
+            <span class="k">if</span> <span class="n">Voc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">list_of_Voc</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Voc</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">list_of_Voc</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">list_of_Voc</span><span class="p">),</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">list_of_Voc</span><span class="p">),</span>
+                    <span class="n">statistics</span><span class="o">.</span><span class="n">q_test</span><span class="p">(</span><span class="n">list_of_Voc</span><span class="p">),</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">list_of_Voc</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span>
+
+
+    <span class="k">def</span> <span class="nf">calc_stat_Isc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span></div>
+<div class="viewcode-block" id="Device.calc_stat_Isc"><a class="viewcode-back" href="../ss_device.html#ss_device.Device.calc_stat_Isc">[docs]</a><span class="sd">        Calculates Isc statistics (mean, median, Q-Test, Std. Dev)</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        ----------</span>
+<span class="sd">        Tuple </span>
+<span class="sd">            (mean, standard deviation, Q_Test outliers, median)</span>
+<span class="sd">            of Isc&#39;s for this device.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">list_of_Isc</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">pixel</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixel_list</span><span class="p">:</span>
+            <span class="n">Isc</span> <span class="o">=</span> <span class="n">pixel</span><span class="o">.</span><span class="n">jv_curve</span><span class="o">.</span><span class="n">Isc</span>
+            <span class="k">if</span> <span class="n">Isc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">list_of_Isc</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Isc</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">list_of_Isc</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">list_of_Isc</span><span class="p">),</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">list_of_Isc</span><span class="p">),</span>
+                    <span class="n">statistics</span><span class="o">.</span><span class="n">q_test</span><span class="p">(</span><span class="n">list_of_Isc</span><span class="p">),</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">list_of_Isc</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span>
+
+    <span class="k">def</span> <span class="nf">calc_stat_Rs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span></div>
+<div class="viewcode-block" id="Device.calc_stat_Rs"><a class="viewcode-back" href="../ss_device.html#ss_device.Device.calc_stat_Rs">[docs]</a><span class="sd">        Calculates series resistance statistics (mean, median, Q-Test, Std. Dev)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        ----------</span>
+<span class="sd">        Tuple</span>
+<span class="sd">            (mean, standard deviation, Q_Test outliers, median)</span>
+<span class="sd">            of series resistances&#39;s for this device.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">list_of_Rs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">pixel</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixel_list</span><span class="p">:</span>
+            <span class="n">Rs</span> <span class="o">=</span> <span class="n">pixel</span><span class="o">.</span><span class="n">jv_curve</span><span class="o">.</span><span class="n">Rs</span>
+            <span class="k">if</span> <span class="n">Rs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">list_of_Rs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Rs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">list_of_Rs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">list_of_Rs</span><span class="p">),</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">list_of_Rs</span><span class="p">),</span>
+                    <span class="n">statistics</span><span class="o">.</span><span class="n">q_test</span><span class="p">(</span><span class="n">list_of_Rs</span><span class="p">),</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">list_of_Rs</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span>
+
+    <span class="k">def</span> <span class="nf">calc_stat_Rsh</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span></div>
+<div class="viewcode-block" id="Device.calc_stat_Rsh"><a class="viewcode-back" href="../ss_device.html#ss_device.Device.calc_stat_Rsh">[docs]</a><span class="sd">        Calculates shunt resistance statistics (mean, median, Q-Test, Std. Dev)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        ----------</span>
+<span class="sd">        Tuple</span>
+<span class="sd">            (mean, standard deviation, Q_Test outliers, median)</span>
+<span class="sd">            of shunt resistances&#39;s for this device.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">list_of_Rsh</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">pixel</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixel_list</span><span class="p">:</span>
+            <span class="n">Rsh</span> <span class="o">=</span> <span class="n">pixel</span><span class="o">.</span><span class="n">jv_curve</span><span class="o">.</span><span class="n">Rsh</span>
+            <span class="k">if</span> <span class="n">Rsh</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">list_of_Rsh</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Rsh</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">list_of_Rsh</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">list_of_Rsh</span><span class="p">),</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">list_of_Rsh</span><span class="p">),</span>
+                    <span class="n">statistics</span><span class="o">.</span><span class="n">q_test</span><span class="p">(</span><span class="n">list_of_Rsh</span><span class="p">),</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">list_of_Rsh</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span>
+</pre></div></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, Colin Summers.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

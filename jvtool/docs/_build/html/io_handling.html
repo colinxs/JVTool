@@ -1,0 +1,205 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>io_handling module &mdash; JVTool  documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="JVTool  documentation" href="index.html" />
+    <link rel="next" title="jv_calculations module" href="jv_calculations.html" />
+    <link rel="prev" title="Welcome to jvtool’s documentation!" href="index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-io_handling">
+<span id="io-handling-module"></span><h1>io_handling module<a class="headerlink" href="#module-io_handling" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="io_handling.HandleFileSave">
+<em class="property">class </em><code class="descclassname">io_handling.</code><code class="descname">HandleFileSave</code><span class="sig-paren">(</span><em>path</em>, <em>overwrite</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/io_handling.html#HandleFileSave"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#io_handling.HandleFileSave" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>This class implements the context manager protocol as defined by
+<a class="reference external" href="https://www.python.org/dev/peps/pep-0343/">https://www.python.org/dev/peps/pep-0343/</a>. It is a modification to
+the built-in &#8216;open()&#8217; function. It will generate a new file object,
+avoiding file collisions if indicated, and handle file overwrites
+on files that are locked (i.e. open in another program).</p>
+<dl class="attribute">
+<dt id="io_handling.HandleFileSave.path">
+<code class="descname">path</code><a class="headerlink" href="#io_handling.HandleFileSave.path" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>str</em></p>
+<p>desired path for new file object</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="io_handling.HandleFileSave.overwrite">
+<code class="descname">overwrite</code><a class="headerlink" href="#io_handling.HandleFileSave.overwrite" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>bool</em></p>
+<p>True if file overwrite is desired, false otherwise</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="io_handling.HandleFileSave.file_handler">
+<code class="descname">file_handler</code><a class="headerlink" href="#io_handling.HandleFileSave.file_handler" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>file object</em></p>
+<p>file handle of new file to save</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="io_handling.extract_data">
+<code class="descclassname">io_handling.</code><code class="descname">extract_data</code><span class="sig-paren">(</span><em>pixel_files_paths</em>, <em>minimum_voc</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/io_handling.html#extract_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#io_handling.extract_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Processes each JV pixel file in pixel_files_paths and creates a new
+jvtool.ss_device.Pixel object for each file. JV pixel files with a Voc
+less than minimum_voc will be ignored.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>pixel_files_paths</strong> (<em>str</em>) &#8211; list of valid JV data pixel files</li>
+<li><strong>minimum_voc</strong> (<em>float</em>) &#8211; minimum_voc allowed for a pixel to be considered</li>
+<li><strong>Returns</strong> &#8211; </li>
+<li><strong>----------</strong> &#8211; </li>
+<li><strong>list</strong> &#8211; list of Pixel objects corresponding to each JV pixel file</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="io_handling.get_dir_path">
+<code class="descclassname">io_handling.</code><code class="descname">get_dir_path</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/io_handling.html#get_dir_path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#io_handling.get_dir_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets a director path from the user, checking if path given is a valid
+directory (i.e. exists and is not a file).</p>
+<dl class="docutils">
+<dt>str</dt>
+<dd>valid pathname of a directory</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="io_handling.get_pixel_file_paths">
+<code class="descclassname">io_handling.</code><code class="descname">get_pixel_file_paths</code><span class="sig-paren">(</span><em>directory</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/io_handling.html#get_pixel_file_paths"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#io_handling.get_pixel_file_paths" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets a list of all valid pixel JV data file paths contained in directory</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>directory</strong> (<em>str</em>) &#8211; the directory to scan</li>
+<li><strong>Returns</strong> &#8211; </li>
+<li><strong>----------</strong> &#8211; </li>
+<li><strong>list</strong> &#8211; list of pixel JV data file paths</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="io_handling.prompt_overwrite">
+<code class="descclassname">io_handling.</code><code class="descname">prompt_overwrite</code><span class="sig-paren">(</span><em>file_type</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/io_handling.html#prompt_overwrite"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#io_handling.prompt_overwrite" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prompts user if they want to overwrite files of type file_type</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>file_type</strong> (<em>str</em>) &#8211; the file_type that the user is prompted for overwrite</li>
+<li><strong>Returns</strong> &#8211; </li>
+<li><strong>----------</strong> &#8211; </li>
+<li><strong>bool</strong> &#8211; True if overwrite of file_type is desired, False otherwise</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Welcome to jvtool&#8217;s documentation!</a></li>
+      <li>Next: <a href="jv_calculations.html" title="next chapter">jv_calculations module</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/io_handling.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, Colin Summers.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+      |
+      <a href="_sources/io_handling.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

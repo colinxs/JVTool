@@ -9,7 +9,7 @@ __status__ = 'Development'
 import os
 import ss_device
 import numpy as np
-import jv_calculations
+import src.jv_calculations
 
 
 def get_dir_path():
@@ -22,7 +22,7 @@ def get_dir_path():
     str
         valid pathname of a directory
     """
-    print 'Give me the path to the directory containing JV data as .txt files'
+    print 'Give me the path to the root directory to be scanned'
     path = raw_input('>')
     if os.path.exists(path) and not os.path.isfile(path):
         return os.path.normpath(path)
@@ -121,7 +121,7 @@ def get_pixel_file_paths(directory):
             with open(path) as pixel_file:
                 # if file contains header indicating proper JV file
                 try:
-                    if 'Bias (V)' in pixel_file.next():
+                    if any(s in pixel_file.next() for s in ('Bias (V)', 'Current (A)')):
                         pixel_files_paths.append(path)
                 except StopIteration:
                     pass
@@ -161,7 +161,7 @@ def extract_data(pixel_files_paths, minimum_voc):
                 unpack=True)
 
             # create JVCurve object from data
-            jv_curve = jv_calculations.JVCurve(
+            jv_curve = src.jv_calculations.JVCurve(
                 bias,
                 current,
                 current_density,
