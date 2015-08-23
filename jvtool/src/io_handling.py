@@ -115,7 +115,8 @@ def get_pixel_file_paths(directory):
     pixel_files_paths = []
     for a_file in os.listdir(directory):
         # if file in directory is a text file that is not the char file
-        if os.path.isfile(os.path.join(directory, a_file)):
+        if (os.path.isfile(os.path.join(directory, a_file)) and
+                a_file.endswith('.txt') and 'char' not in a_file):
             path = os.path.join(directory, a_file)
             with open(path) as pixel_file:
                 # if file contains header indicating proper JV file
